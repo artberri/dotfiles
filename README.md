@@ -24,7 +24,7 @@ cd ~/.dotfiles
 ./install
 ```
 
-`install` is a small, dependency-free Bash script that installs the packages the configs rely on (eza, duf, jq, starship, delta, Ghostty…) and symlinks the files in this repo into `$HOME`. Because they are symlinks, editing a config in the repo takes effect immediately. Existing files are moved to `~/.dotfiles-backup/<timestamp>/` (keeping their path relative to `$HOME`) before being replaced, and re-running it is safe.
+`install` is a small, dependency-free Bash script that installs the packages the configs rely on (eza, duf, jq, fzf, zoxide, starship, delta, Ghostty…) and symlinks the files in this repo into `$HOME`. Because they are symlinks, editing a config in the repo takes effect immediately. Existing files are moved to `~/.dotfiles-backup/<timestamp>/` (keeping their path relative to `$HOME`) before being replaced, and re-running it is safe.
 
 ```bash
 ./install              # all tools

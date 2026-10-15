@@ -1,0 +1,4 @@
+# brew name          options (see ./install)
+# Smarter cd: `z <part of a path>` jumps to the best match among visited dirs
+# (see bash/extend.bashrc).
+zoxide               cmd=zoxide

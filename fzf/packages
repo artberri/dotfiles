@@ -1,0 +1,4 @@
+# brew name          options (see ./install)
+# Fuzzy finder: Ctrl-R history, Ctrl-T files, Alt-C directories (see
+# bash/extend.bashrc).
+fzf                  cmd=fzf

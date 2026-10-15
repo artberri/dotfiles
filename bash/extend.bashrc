@@ -227,6 +227,22 @@ alias gl='g lg -5'
 # Installed and configured by starship/
 command -v starship >/dev/null 2>&1 && eval "$(starship init bash)"
 
+# --- Fuzzy finder and smarter cd ---------------------------------------------
+
+# fzf key bindings (Ctrl-R, Ctrl-T, Alt-C) and completion. `fzf --bash` only
+# exists from 0.48; older apt versions ship the scripts separately.
+if command -v fzf >/dev/null 2>&1; then
+	if fzf_init="$(fzf --bash 2>/dev/null)"; then
+		eval "$fzf_init"
+	elif [ -r /usr/share/doc/fzf/examples/key-bindings.bash ]; then
+		. /usr/share/doc/fzf/examples/key-bindings.bash
+	fi
+	unset fzf_init
+fi
+
+# zoxide hooks into PROMPT_COMMAND, so initialise it after starship
+command -v zoxide >/dev/null 2>&1 && eval "$(zoxide init bash)"
+
 # --- Local overrides ---------------------------------------------------------
 
 # Hand-written, machine-specific config (aliases, work shortcuts…). Never
