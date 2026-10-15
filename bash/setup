@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 #
 # - Make ~/.bashrc load ~/.extend.bashrc (and ~/.bash_profile load ~/.bashrc).
-# - Install starship on Linux if apt didn't have it.
 # - Make an up-to-date bash the login shell. On macOS that means Homebrew's
 #   bash, since /bin/bash is stuck at 3.2.
 #
@@ -31,18 +30,6 @@ ensure_line "$HOME/.bashrc" ".extend.bashrc" \
 if [ -f "$HOME/.bash_profile" ] || [ "$DOTFILES_OS" = macos ]; then
 	ensure_line "$HOME/.bash_profile" "/.bashrc" \
 		'[ -f "$HOME/.bashrc" ] && . "$HOME/.bashrc"'
-fi
-
-# starship isn't in apt on some releases (e.g. Ubuntu 24.04): use its
-# official installer, into ~/.local/bin so it needs no sudo.
-if ! command -v starship >/dev/null 2>&1 && [ "$DOTFILES_OS" = linux ]; then
-	if command -v curl >/dev/null 2>&1; then
-		echo "  Installing starship with its official installer into ~/.local/bin"
-		mkdir -p "$HOME/.local/bin"
-		curl -fsSL https://starship.rs/install.sh | sh -s -- --yes --bin-dir "$HOME/.local/bin" >/dev/null
-	else
-		echo "  starship not installed and curl is missing; skipping" >&2
-	fi
 fi
 
 if [ "$DOTFILES_OS" = macos ]; then

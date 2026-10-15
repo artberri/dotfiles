@@ -1,0 +1,3 @@
+# brew name          options (see ./install)
+# Not in Ubuntu 24.04's apt; starship/setup falls back to the official installer.
+starship             cmd=starship

@@ -170,6 +170,7 @@ alias gl='g lg -5'
 
 # --- Prompt ------------------------------------------------------------------
 
+# Installed and configured by starship/
 command -v starship >/dev/null 2>&1 && eval "$(starship init bash)"
 
 # --- Local overrides ---------------------------------------------------------

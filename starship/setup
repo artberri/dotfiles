@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+#
+# Install starship on Linux when apt didn't have it.
+
+set -euo pipefail
+
+# starship isn't in apt on some releases (e.g. Ubuntu 24.04): use its
+# official installer, into ~/.local/bin so it needs no sudo.
+if ! command -v starship >/dev/null 2>&1 && [ "$DOTFILES_OS" = linux ]; then
+	if command -v curl >/dev/null 2>&1; then
+		echo "  Installing starship with its official installer into ~/.local/bin"
+		mkdir -p "$HOME/.local/bin"
+		curl -fsSL https://starship.rs/install.sh | sh -s -- --yes --bin-dir "$HOME/.local/bin" >/dev/null
+	else
+		echo "  starship not installed and curl is missing; skipping" >&2
+	fi
+fi
