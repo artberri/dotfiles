@@ -14,7 +14,7 @@ The repo is at an early stage. When a task requires choosing a structure or a ne
   - symlinks repo files into `$HOME` (edits in the repo are live);
   - must only need what ships with a stock macOS or Linux install (Bash 3.2-compatible, POSIX utilities);
   - handles OS differences itself (see below);
-  - backs up any existing non-symlink target before linking, and is safe to re-run.
+  - moves any existing target it replaces to `~/.dotfiles-backup/<timestamp>/<path relative to $HOME>` (never next to the original, where tools reading a whole folder would pick it up), and is safe to re-run.
 - **Repo layout: one folder per tool.** A top-level folder is a tool when it contains a `links` file:
 
   ```text
