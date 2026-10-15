@@ -1,0 +1,4 @@
+# source    target (relative to $HOME)
+# ~/.ssh/config belongs to the machine (hosts, tools like gcloud write to it);
+# setup makes it include this file at the end.
+config      .ssh/dotfiles.conf

@@ -80,7 +80,7 @@ git pull
 
 ## Machine-specific config
 
-Some files belong to each machine and are **never** symlinked: `~/.bashrc`, `~/.bash_profile` and `~/.gitconfig`. Tool installers (nvm, bun, gcloud, `gh auth setup-git`…) love to append to them, and those changes shouldn't end up as noise in this repo. Anything personal, secret or specific to one machine goes there too.
+Some files belong to each machine and are **never** symlinked: `~/.bashrc`, `~/.bash_profile`, `~/.gitconfig` and `~/.ssh/config`. Tool installers (nvm, bun, gcloud, `gh auth setup-git`…) love to append to them, and those changes shouldn't end up as noise in this repo. Anything personal, secret or specific to one machine goes there too.
 
 The shared config is loaded alongside them instead:
 
@@ -88,6 +88,8 @@ The shared config is loaded alongside them instead:
 |---|---|---|
 | `~/.extend.bashrc` | `~/.bashrc` | `./install bash` appends a line to `~/.bashrc` that sources it |
 | `~/.config/git/config` | `~/.gitconfig` | Git reads both; `~/.gitconfig` wins |
+| `~/.ssh/dotfiles.conf` | `~/.ssh/config` | `./install ssh` appends an `Include` at the end; host entries above it win. Hosts never go in this repo |
+| `~/.inputrc` | `~/.inputrc.local` | `~/.inputrc` includes it last |
 
 Your own hand-written, machine-specific shell config (aliases, work shortcuts, completions) goes in **`~/.bashrc.local`**. `~/.extend.bashrc` loads it at the end, so it can override anything shared. It is never committed, and unlike `~/.bashrc` no installer writes to it.
 

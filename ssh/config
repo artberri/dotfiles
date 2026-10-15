@@ -1,0 +1,16 @@
+# Shared SSH client defaults, linked to ~/.ssh/dotfiles.conf.
+#
+# Included at the END of the machine's ~/.ssh/config (ssh/setup adds it).
+# ssh uses the first value it finds for each option, so anything set for a
+# host in ~/.ssh/config wins over these. Host entries never go here: this
+# repo is public.
+
+Host *
+	# UseKeychain only exists on macOS; don't fail on Linux.
+	IgnoreUnknown UseKeychain
+	UseKeychain yes
+	# Load keys into the agent on first use (passphrase asked once)
+	AddKeysToAgent yes
+	# Keep idle connections alive and notice dead ones (~3 min)
+	ServerAliveInterval 60
+	ServerAliveCountMax 3

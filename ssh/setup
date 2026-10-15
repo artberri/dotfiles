@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+#
+# Make the machine's ~/.ssh/config include the shared defaults, at the end so
+# its own host entries take precedence.
+
+set -euo pipefail
+
+ssh_dir="$HOME/.ssh"
+config="$ssh_dir/config"
+
+chmod 700 "$ssh_dir"
+
+if [ -f "$config" ] && grep -qF "dotfiles.conf" "$config"; then
+	echo "  ~/.ssh/config already includes dotfiles.conf"
+	exit 0
+fi
+
+echo "  Adding shared defaults to the end of ~/.ssh/config"
+if [ ! -e "$config" ]; then
+	(umask 077 && : >"$config")
+elif [ -s "$config" ] && [ -n "$(tail -c 1 "$config")" ]; then
+	echo >>"$config"
+fi
+cat >>"$config" <<'CONF'
+
+# Shared defaults from dotfiles. Keep at the end: entries above take precedence.
+Match all
+Include ~/.ssh/dotfiles.conf
+CONF
