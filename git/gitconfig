@@ -1,0 +1,43 @@
+[user]
+	name = Alberto Varela Sánchez
+	# email is set per machine/directory in ~/.gitconfig.local
+[init]
+	defaultBranch = main
+[alias]
+	co = checkout
+	ci = commit
+	st = status
+	amend = commit -a --amend --no-edit
+	p = pull
+	h = push
+	lg = log --graph --abbrev-commit --decorate --date=format:'%Y-%m-%d %H:%M:%S' --pretty=format:'%C(bold blue)%h%C(reset) - %C(bold green)(%ad)%C(reset) %C(white)%s%C(reset) %C(dim white)- %an%C(reset)%C(bold yellow)%d%C(reset)'
+	undo = reset --soft HEAD~1
+[color]
+	ui = auto
+[pull]
+	ff = only
+[push]
+	autoSetupRemote = true
+	default = current
+[merge]
+	conflictstyle = diff3
+[diff]
+	colorMoved = default
+[core]
+	# delta is installed by git/setup
+	pager = delta
+[interactive]
+	diffFilter = delta --color-only
+[delta]
+	# use n and N to move between diff sections
+	navigate = true
+	# set to true on terminals with a light background
+	light = false
+[diff "lockb"]
+	textconv = bun
+	binary = true
+
+# Machine-specific settings (email, includeIf per directory, credentials…).
+# Kept last so it can override anything above. Not tracked.
+[include]
+	path = ~/.gitconfig.local

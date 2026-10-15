@@ -1,0 +1,4 @@
+# Machine-specific and secret overrides, never committed
+*.local
+
+.DS_Store

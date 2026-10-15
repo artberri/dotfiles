@@ -1,0 +1,3 @@
+# source        target (relative to $HOME)
+bash_profile    .bash_profile
+bashrc          .bashrc

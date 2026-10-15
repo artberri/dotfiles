@@ -1,0 +1,109 @@
+# shellcheck shell=bash
+
+# --- Environment (all shells) ------------------------------------------------
+
+# Prepend a directory to PATH if it exists and isn't already there.
+path_prepend() {
+	[ -d "$1" ] || return 0
+	case ":$PATH:" in
+	*":$1:"*) ;;
+	*) PATH="$1:$PATH" ;;
+	esac
+}
+
+if [ "$(uname -s)" = Darwin ]; then
+	# Stock /bin/bash nags about zsh being the default shell.
+	export BASH_SILENCE_DEPRECATION_WARNING=1
+
+	for brew in /opt/homebrew/bin/brew /usr/local/bin/brew; do
+		if [ -x "$brew" ]; then
+			eval "$("$brew" shellenv)"
+			break
+		fi
+	done
+	unset brew
+fi
+
+path_prepend "$HOME/.local/bin"
+path_prepend "$HOME/bin"
+export PATH
+
+export EDITOR="${EDITOR:-vim}"
+
+# Everything below only applies to interactive shells.
+[[ $- == *i* ]] || return
+
+# --- History -----------------------------------------------------------------
+
+HISTSIZE=50000
+HISTFILESIZE=100000
+HISTCONTROL=ignoreboth:erasedups
+shopt -s histappend
+# Write each command to the history file as soon as it runs, so it survives
+# crashes and shows up in other terminals.
+PROMPT_COMMAND="history -a${PROMPT_COMMAND:+; $PROMPT_COMMAND}"
+
+# --- Shell options -----------------------------------------------------------
+
+shopt -s checkwinsize cdspell
+# Bash 4+ only; ignored if the stock macOS bash reads this file.
+shopt -s autocd globstar checkjobs 2>/dev/null
+
+# --- Completion --------------------------------------------------------------
+
+if [ -n "${HOMEBREW_PREFIX:-}" ] && [ -r "$HOMEBREW_PREFIX/etc/profile.d/bash_completion.sh" ]; then
+	. "$HOMEBREW_PREFIX/etc/profile.d/bash_completion.sh"
+elif [ -r /usr/share/bash-completion/bash_completion ]; then
+	. /usr/share/bash-completion/bash_completion
+fi
+
+# --- Colors ------------------------------------------------------------------
+
+if command -v dircolors >/dev/null 2>&1; then
+	if [ -r "$HOME/.dircolors" ]; then
+		eval "$(dircolors -b "$HOME/.dircolors")"
+	else
+		eval "$(dircolors -b)"
+	fi
+	alias ls='ls --color=auto'
+else
+	# BSD ls (macOS)
+	export CLICOLOR=1
+fi
+alias grep='grep --color=auto'
+
+export EZA_COLORS=di=34:bd=33:cd=33:so=31:ex=32:ur=33:uw=31:ux=32:ue=32:uu=33:gu=33:lc=31:df=32:sn=32:nb=32:nk=32:nm=32:ng=32:nt=32
+
+# --- Aliases -----------------------------------------------------------------
+
+if command -v eza >/dev/null 2>&1; then
+	alias ll='eza -alF'
+else
+	alias ll='ls -alF'
+fi
+command -v duf >/dev/null 2>&1 && alias df='duf'
+alias du='du -kh'
+
+# Git. Most of these rely on aliases defined in ~/.gitconfig
+# (p, h, ci, co, st, lg).
+alias g='git'
+alias rebase='git fetch && git rebase origin/master'
+alias stash='git stash'
+alias unstash='git stash pop 0'
+alias gp='g p'
+alias gu='g h'
+alias guf='g h --force'
+alias ga='g add .'
+alias gci='g ci -m'
+alias gco='g co'
+alias gcob='g co -b'
+alias gs='g st'
+alias gl='g lg -5'
+
+# --- Prompt ------------------------------------------------------------------
+
+command -v starship >/dev/null 2>&1 && eval "$(starship init bash)"
+
+# --- Local overrides (not tracked) -------------------------------------------
+
+if [ -f "$HOME/.bashrc.local" ]; then . "$HOME/.bashrc.local"; fi

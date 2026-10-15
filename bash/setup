@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+#
+# Make an up-to-date bash the login shell. On macOS that means Homebrew's
+# bash, since /bin/bash is stuck at 3.2.
+
+set -euo pipefail
+
+if [ "$DOTFILES_OS" = macos ]; then
+	if ! command -v brew >/dev/null 2>&1; then
+		for brew in /opt/homebrew/bin/brew /usr/local/bin/brew; do
+			if [ -x "$brew" ]; then
+				eval "$("$brew" shellenv)"
+				break
+			fi
+		done
+	fi
+	if ! command -v brew >/dev/null 2>&1; then
+		echo "  Homebrew not found. Install it from https://brew.sh and re-run: ./install bash" >&2
+		exit 1
+	fi
+
+	for formula in bash bash-completion@2; do
+		if ! brew list --formula "$formula" >/dev/null 2>&1; then
+			echo "  brew install $formula"
+			brew install "$formula"
+		fi
+	done
+
+	bash_path="$(brew --prefix)/bin/bash"
+	current_shell="$(dscl . -read "/Users/$(id -un)" UserShell | awk '{print $2}')"
+else
+	bash_path="$(command -v bash)"
+	current_shell="$(getent passwd "$(id -un)" | cut -d: -f7)"
+fi
+
+if ! grep -qxF "$bash_path" /etc/shells; then
+	echo "  Adding $bash_path to /etc/shells (needs sudo)"
+	echo "$bash_path" | sudo tee -a /etc/shells >/dev/null
+fi
+
+if [ "$current_shell" != "$bash_path" ]; then
+	echo "  Changing login shell to $bash_path"
+	chsh -s "$bash_path"
+	echo "  Done. Open a new terminal to start using it."
+else
+	echo "  Login shell is already $bash_path"
+fi

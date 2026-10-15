@@ -1,0 +1,3 @@
+# Login shells (macOS terminals, SSH) read this file; keep everything in
+# ~/.bashrc so login and non-login shells behave the same.
+[ -f "$HOME/.bashrc" ] && . "$HOME/.bashrc"

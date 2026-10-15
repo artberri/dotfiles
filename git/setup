@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+#
+# Install delta, the pager configured in gitconfig.
+
+set -euo pipefail
+
+if command -v delta >/dev/null 2>&1; then
+	echo "  delta already installed"
+	exit 0
+fi
+
+if [ "$DOTFILES_OS" = macos ] && command -v brew >/dev/null 2>&1; then
+	echo "  brew install git-delta"
+	brew install git-delta
+else
+	echo "  delta not found; git diffs will fail until it is installed:" >&2
+	echo "  https://dandavison.github.io/delta/installation.html" >&2
+fi

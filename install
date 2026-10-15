@@ -1,0 +1,152 @@
+#!/usr/bin/env bash
+#
+# Symlink dotfiles into $HOME and run per-tool setup hooks.
+#
+# Each top-level directory with a `links` file is a "tool". Every line in
+# `links` is:
+#
+#   <source relative to tool dir>  <target relative to $HOME>  [macos|linux]
+#
+# An optional executable `setup` script in the tool directory runs after its
+# links are in place. Hooks must be idempotent.
+#
+# Must stay compatible with Bash 3.2 (stock macOS /bin/bash).
+
+set -euo pipefail
+
+DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
+DRY_RUN=0
+RUN_SETUP=1
+
+case "$(uname -s)" in
+Darwin) DOTFILES_OS=macos ;;
+Linux) DOTFILES_OS=linux ;;
+*)
+	echo "Unsupported OS: $(uname -s)" >&2
+	exit 1
+	;;
+esac
+export DOTFILES_DIR DOTFILES_OS
+
+usage() {
+	cat <<USAGE
+Usage: ./install [options] [tool...]
+
+Symlink the given tools (default: all) into \$HOME and run their setup hooks.
+
+Options:
+  -n, --dry-run   Print what would be done without changing anything
+      --no-setup  Only create links, skip setup hooks
+  -h, --help      Show this help
+USAGE
+}
+
+log() { printf '%s\n' "$*"; }
+
+run() {
+	if [ "$DRY_RUN" -eq 1 ]; then
+		log "  [dry-run] $*"
+	else
+		"$@"
+	fi
+}
+
+link_file() {
+	local src="$1" dest="$2"
+
+	if [ -L "$dest" ] && [ "$(readlink "$dest")" = "$src" ]; then
+		log "  ok      ~/${dest#"$HOME"/}"
+		return
+	fi
+
+	if [ -e "$dest" ] || [ -L "$dest" ]; then
+		local backup
+		backup="$dest.backup.$(date +%Y%m%d%H%M%S)"
+		log "  backup  ~/${dest#"$HOME"/} -> ${backup##*/}"
+		run mv "$dest" "$backup"
+	fi
+
+	log "  link    ~/${dest#"$HOME"/}"
+	run mkdir -p "$(dirname "$dest")"
+	run ln -s "$src" "$dest"
+}
+
+install_tool() {
+	local tool="$1" dir="$DOTFILES_DIR/$1"
+
+	if [ ! -f "$dir/links" ]; then
+		echo "Unknown tool: $tool (no $tool/links file)" >&2
+		return 1
+	fi
+
+	log "==> $tool"
+
+	local src dest os
+	while read -r src dest os || [ -n "$src" ]; do
+		case "$src" in '' | '#'*) continue ;; esac
+		if [ -n "$os" ] && [ "$os" != "$DOTFILES_OS" ]; then
+			continue
+		fi
+		if [ -z "$dest" ]; then
+			echo "  $tool/links: missing target for '$src'" >&2
+			return 1
+		fi
+		if [ ! -e "$dir/$src" ]; then
+			echo "  $tool/links: source '$src' does not exist" >&2
+			return 1
+		fi
+		link_file "$dir/$src" "$HOME/$dest"
+	done <"$dir/links"
+
+	if [ -x "$dir/setup" ]; then
+		if [ "$RUN_SETUP" -eq 1 ] && [ "$DRY_RUN" -eq 0 ]; then
+			log "  setup"
+			"$dir/setup"
+		else
+			log "  setup   (skipped)"
+		fi
+	fi
+}
+
+main() {
+	local tools=()
+
+	while [ $# -gt 0 ]; do
+		case "$1" in
+		-n | --dry-run) DRY_RUN=1 ;;
+		--no-setup) RUN_SETUP=0 ;;
+		-h | --help)
+			usage
+			exit 0
+			;;
+		-*)
+			echo "Unknown option: $1" >&2
+			usage >&2
+			exit 1
+			;;
+		*) tools+=("$1") ;;
+		esac
+		shift
+	done
+
+	if [ ${#tools[@]} -eq 0 ]; then
+		local links
+		for links in "$DOTFILES_DIR"/*/links; do
+			[ -f "$links" ] || continue
+			links="${links%/links}"
+			tools+=("${links##*/}")
+		done
+	fi
+
+	if [ ${#tools[@]} -eq 0 ]; then
+		log "No tools found."
+		return
+	fi
+
+	local tool
+	for tool in "${tools[@]}"; do
+		install_tool "$tool"
+	done
+}
+
+main "$@"

@@ -1,0 +1,3 @@
+# source         target (relative to $HOME)
+gitconfig        .gitconfig
+ignore           .config/git/ignore
