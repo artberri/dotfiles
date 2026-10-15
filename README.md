@@ -14,6 +14,32 @@ It replaces my previous, now archived, Ansible-based setup: [artberri/devenv](ht
 - **Idempotent**: running the install again is always safe and only applies what changed.
 - **Safe to publish**: this repo is public, so no secrets, tokens or machine-specific private data live here. Those stay in each machine's own files (`~/.bashrc.local`, `~/.gitconfig`).
 
+## New machine
+
+The whole setup, in order. Steps 1–4 get the files in place; the rest are the machine-specific bits this public repo deliberately doesn't hold.
+
+1. **Prerequisites.**
+   - macOS: install the command line tools (`xcode-select --install`, gives you git) and [Homebrew](https://brew.sh).
+   - Debian/Ubuntu: `sudo apt install git curl`.
+2. **SSH key** (for GitHub and servers). Either copy `~/.ssh/id_ed25519` and `id_ed25519.pub` from the old machine (somewhere private: AirDrop, a USB stick) and `chmod 600 ~/.ssh/id_ed25519`, or create a new one with `ssh-keygen -t ed25519` and add the `.pub` to GitHub under *Settings → SSH and GPG keys*. On macOS, store its passphrase in the Keychain once with `ssh-add --apple-use-keychain ~/.ssh/id_ed25519`.
+3. **Clone into `~/.dotfiles`** (the git identity below relies on that path):
+
+   ```bash
+   git clone git@github.com:artberri/dotfiles.git ~/.dotfiles
+   ```
+
+4. **Install**, then open a new terminal (Ghostty, on macOS):
+
+   ```bash
+   ~/.dotfiles/install
+   ```
+
+5. **Git identities.** Add `includeIf` blocks to `~/.gitconfig`, one per identity, and one for `~/.dotfiles` itself ([example](#machine-specific-config)). Until a repo has an email, git refuses to commit there (`user.useConfigOnly`) rather than making one up from the hostname.
+6. **Commit signing**: import or create the GPG keys and point each identity at its key ([steps](#commit-signing-on-a-new-machine)).
+7. **Machine-specific shell config** (work aliases, tool paths…) goes in `~/.bashrc.local`; extra SSH hosts in `~/.ssh/config`.
+8. **macOS only:** open Karabiner-Elements once and allow what it asks for (driver, input monitoring), or the remaps won't apply.
+9. **Check:** `dot doctor` should say *all good*. It checks links, packages, the repo's sync with GitHub, and that every identity has an email and a usable signing key.
+
 ## Installation
 
 Requirements: `git`, and on macOS [Homebrew](https://brew.sh). Linux support targets **Debian and Ubuntu**; other distros get the links and config but must install packages by hand.
@@ -27,11 +53,11 @@ cd ~/.dotfiles
 `install` is a small, dependency-free Bash script that installs the packages the configs rely on (eza, duf, jq, fzf, zoxide, starship, delta, Ghostty…) and symlinks the files in this repo into `$HOME`. Because they are symlinks, editing a config in the repo takes effect immediately. Existing files are moved to `~/.dotfiles-backup/<timestamp>/` (keeping their path relative to `$HOME`) before being replaced, and re-running it is safe.
 
 ```bash
-./install              # all tools
-./install bash         # only some tools
-./install --dry-run    # show what would change
+./install                # all tools
+./install bash           # only some tools
+./install --dry-run      # show what would change
 ./install --no-packages  # skip installing packages
-./install --no-setup   # skip setup hooks
+./install --no-setup     # skip setup hooks
 ```
 
 ### Packages
@@ -102,7 +128,7 @@ docker run --rm -v "$PWD:/src:ro" ubuntu:24.04 sh /src/test/container.sh
 
 ```bash
 dot update          # git pull, then ./install
-dot doctor          # is this machine in sync with the repo? (links, packages, unpushed or missing commits)
+dot doctor          # is this machine in sync with the repo? (links, packages, git identities and signing keys, unpushed or missing commits)
 dot install [args]  # ./install with any of its options
 dot unlink [tool…]  # remove the links and restore the latest backups (packages stay installed)
 dot dir             # print the repo path, e.g. cd "$(dot dir)"
