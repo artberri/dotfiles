@@ -2,8 +2,8 @@
 #
 # Install packages, symlink dotfiles into $HOME and run per-tool setup hooks.
 #
-# Each top-level directory with a `links` file is a "tool". Every line in
-# `links` is:
+# Each top-level directory with a `links` and/or `packages` file is a "tool".
+# Every line in `links` is:
 #
 #   <source relative to tool dir>  <target relative to $HOME>  [macos|linux]
 #
@@ -236,10 +236,9 @@ install_packages() {
 install_tool() {
 	local tool="$1" dir="$DOTFILES_DIR/$1"
 
-	if [ ! -f "$dir/links" ]; then
-		echo "Unknown tool: $tool (no $tool/links file)" >&2
-		return 1
-	fi
+is_tool() {
+	[ -f "$1/links" ] || [ -f "$1/packages" ]
+}
 
 	log "==> $tool"
 
@@ -258,7 +257,7 @@ install_tool() {
 			return 1
 		fi
 		link_file "$dir/$src" "$HOME/$dest"
-	done <"$dir/links"
+	done < <(if [ -f "$dir/links" ]; then cat "$dir/links"; fi)
 
 	if [ -x "$dir/setup" ]; then
 		if [ "$RUN_SETUP" -eq 1 ] && [ "$DRY_RUN" -eq 0 ]; then
@@ -293,11 +292,12 @@ main() {
 	done
 
 	if [ ${#tools[@]} -eq 0 ]; then
-		local links
-		for links in "$DOTFILES_DIR"/*/links; do
-			[ -f "$links" ] || continue
-			links="${links%/links}"
-			tools+=("${links##*/}")
+		local dir
+		for dir in "$DOTFILES_DIR"/*/; do
+			dir="${dir%/}"
+			if is_tool "$dir"; then
+				tools+=("${dir##*/}")
+			fi
 		done
 	fi
 
@@ -308,8 +308,8 @@ main() {
 
 	local tool
 	for tool in "${tools[@]}"; do
-		if [ ! -f "$DOTFILES_DIR/$tool/links" ]; then
-			echo "Unknown tool: $tool (no $tool/links file)" >&2
+		if ! is_tool "$DOTFILES_DIR/$tool"; then
+			echo "Unknown tool: $tool (no $tool/links or $tool/packages file)" >&2
 			exit 1
 		fi
 	done

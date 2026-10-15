@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+#
+# Debian/Ubuntu install bat as `batcat` (name clash with another package);
+# expose it as `bat` too.
+
+set -euo pipefail
+
+if ! command -v bat >/dev/null 2>&1 && command -v batcat >/dev/null 2>&1; then
+	echo "  Linking batcat as ~/.local/bin/bat"
+	mkdir -p "$HOME/.local/bin"
+	ln -sf "$(command -v batcat)" "$HOME/.local/bin/bat"
+fi

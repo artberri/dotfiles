@@ -57,7 +57,7 @@ Bash is the shell on every machine, macOS included. `./install bash` links the s
 
 ## Layout
 
-One folder per tool. Each folder has a `links` file listing what to symlink where, optionally a `packages` file listing what it needs installed, and optionally a `setup` script for anything else (changing the shell…).
+One folder per tool. Each folder has a `links` file listing what to symlink where and/or a `packages` file listing what it needs installed, plus optionally a `setup` script for anything else (changing the shell…). Tools without config, like `gh` or `ripgrep`, live in `cli/`, which only has `packages`.
 
 ```text
 bash/
