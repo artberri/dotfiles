@@ -155,6 +155,13 @@ alias du='du -kh'
 # Git. Most of these rely on aliases defined in ~/.gitconfig
 # (p, h, ci, co, st, lg), see git/gitconfig.
 alias g='git'
+# Give `g` and `gco` git's completion. bash-completion loads git's completion
+# lazily, so load it now (bash-completion 2.x; skipped where unavailable).
+if declare -F __load_completion >/dev/null 2>&1 && __load_completion git 2>/dev/null &&
+	declare -F __git_complete >/dev/null 2>&1; then
+	__git_complete g __git_main
+	__git_complete gco _git_checkout
+fi
 alias rebase='git fetch && git rebase origin/master'
 alias stash='git stash'
 alias unstash='git stash pop 0'

@@ -1,1 +1,8 @@
+# Global ignores: OS and editor droppings that never belong in any repo.
+# (Editor folders like .idea/ and .vscode/ are left out on purpose: some
+# projects commit shared settings there.)
+.DS_Store
+._*
+*.swp
+*~
 **/.claude/settings.local.json
