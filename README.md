@@ -2,8 +2,7 @@
 
 My personal configuration files ([@artberri](https://github.com/artberri)), shared across the machines I use, both **macOS** and **Linux**.
 
-> [!NOTE]
-> This repository is a work in progress. It replaces my previous, now archived, Ansible-based setup: [artberri/devenv](https://github.com/artberri/devenv).
+It replaces my previous, now archived, Ansible-based setup: [artberri/devenv](https://github.com/artberri/devenv).
 
 ## Goals
 
