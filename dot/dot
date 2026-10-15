@@ -1,0 +1,104 @@
+#!/usr/bin/env bash
+#
+# dot: manage these dotfiles from anywhere.
+
+set -euo pipefail
+
+# Find the repo through the ~/.local/bin/dot link (readlink -f isn't portable
+# to macOS's readlink).
+self="${BASH_SOURCE[0]}"
+while [ -L "$self" ]; do
+	target="$(readlink "$self")"
+	case "$target" in
+	/*) self="$target" ;;
+	*) self="$(dirname "$self")/$target" ;;
+	esac
+done
+DOTFILES_DIR="$(cd "$(dirname "$self")/.." && pwd -P)"
+
+usage() {
+	cat <<USAGE
+Usage: dot <command> [args]
+
+Commands:
+  update [tool...]   Pull the latest changes, then run ./install
+  install [args]     Run ./install (see dot install --help)
+  unlink [tool...]   Remove the links and restore the latest backups
+  doctor             Check the repo and this machine are in sync
+  dir                Print the repo path (e.g. cd "\$(dot dir)")
+USAGE
+}
+
+cmd_update() {
+	git -C "$DOTFILES_DIR" pull --ff-only
+	"$DOTFILES_DIR/install" "$@"
+}
+
+cmd_doctor() {
+	local problems=0 out changes
+
+	echo "==> repo ($DOTFILES_DIR)"
+	if [ -n "$(git -C "$DOTFILES_DIR" status --porcelain)" ]; then
+		echo "  uncommitted changes (git -C \"$DOTFILES_DIR\" status)"
+		problems=$((problems + 1))
+	fi
+	if git -C "$DOTFILES_DIR" rev-parse --abbrev-ref '@{u}' >/dev/null 2>&1; then
+		if git -C "$DOTFILES_DIR" fetch -q 2>/dev/null; then
+			local behind ahead
+			behind="$(git -C "$DOTFILES_DIR" rev-list --count 'HEAD..@{u}')"
+			ahead="$(git -C "$DOTFILES_DIR" rev-list --count '@{u}..HEAD')"
+			if [ "$behind" -gt 0 ]; then
+				echo "  $behind commit(s) behind the remote: run dot update"
+				problems=$((problems + 1))
+			fi
+			if [ "$ahead" -gt 0 ]; then
+				echo "  $ahead commit(s) not pushed"
+				problems=$((problems + 1))
+			fi
+		else
+			echo "  couldn't fetch the remote (offline?); skipped the sync check"
+		fi
+	fi
+
+	echo "==> this machine"
+	out="$("$DOTFILES_DIR/install" --dry-run --no-setup 2>&1)"
+	changes="$(printf '%s\n' "$out" | grep -E '^  (link|backup) |would install' || true)"
+	if [ -n "$changes" ]; then
+		printf '%s\n' "$changes"
+		echo "  run dot install to fix"
+		problems=$((problems + 1))
+	fi
+	if ! grep -qF ".extend.bashrc" "$HOME/.bashrc" 2>/dev/null; then
+		echo "  ~/.bashrc doesn't load ~/.extend.bashrc: run dot install bash"
+		problems=$((problems + 1))
+	fi
+
+	if [ "$problems" -eq 0 ]; then
+		echo "  all good"
+	else
+		return 1
+	fi
+}
+
+case "${1:-}" in
+update)
+	shift
+	cmd_update "$@"
+	;;
+install)
+	shift
+	exec "$DOTFILES_DIR/install" "$@"
+	;;
+unlink)
+	shift
+	exec "$DOTFILES_DIR/install" --unlink "$@"
+	;;
+doctor) cmd_doctor ;;
+dir) echo "$DOTFILES_DIR" ;;
+-h | --help | help | "") usage ;;
+*)
+	echo "dot: unknown command '$1'" >&2
+	usage >&2
+	exit 1
+	;;
+esac

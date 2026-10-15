@@ -27,6 +27,7 @@ DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
 DRY_RUN=0
 RUN_SETUP=1
 RUN_PACKAGES=1
+UNLINK=0
 # Files replaced by links are moved here, keeping their path relative to
 # $HOME. Kept outside any config folder so tools that read a whole folder
 # (e.g. Ghostty's themes/) never pick a backup up.
@@ -68,6 +69,9 @@ Install the packages the given tools (default: all) need, symlink them into
 
 Options:
   -n, --dry-run      Print what would be done without changing anything
+      --unlink       Remove the links instead (packages and setup changes
+                     stay) and restore the latest backups from
+                     ~/.dotfiles-backup
       --no-packages  Skip installing packages
       --no-setup     Skip setup hooks
   -h, --help         Show this help
@@ -202,12 +206,11 @@ install_packages() {
 		return 0
 	fi
 
-	if [ "$DRY_RUN" -eq 1 ]; then
-		log "  [dry-run] would install: $missing"
-		return 0
-	fi
-
 	if [ "$DOTFILES_PKG_MANAGER" = brew ]; then
+		if [ "$DRY_RUN" -eq 1 ]; then
+			log "  [dry-run] would install: $missing"
+			return 0
+		fi
 		log "  install $missing"
 		# shellcheck disable=SC2086
 		brew install $missing
@@ -216,8 +219,9 @@ install_packages() {
 
 	# apt: refresh the index unless it's less than a day old (so re-runs
 	# with permanently unavailable packages don't prompt for sudo), then
-	# install what exists in this release.
-	if [ -z "$(find /var/lib/apt/lists -maxdepth 1 -name '*Packages*' -mmin -1440 2>/dev/null | head -n 1)" ]; then
+	# install what exists in this release. A dry run uses the index as is.
+	if [ "$DRY_RUN" -eq 0 ] &&
+		[ -z "$(find /var/lib/apt/lists -maxdepth 1 -name '*Packages*' -mmin -1440 2>/dev/null | head -n 1)" ]; then
 		log "  sudo apt-get update"
 		sudo apt-get update -qq
 	fi
@@ -229,15 +233,42 @@ install_packages() {
 			log "  $pkg: not in this release's repositories, skipped"
 		fi
 	done
-	if [ -n "$available" ]; then
-		log "  install$available"
-		# shellcheck disable=SC2086
-		sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq $available >/dev/null
+	if [ -z "$available" ]; then
+		return 0
 	fi
+	if [ "$DRY_RUN" -eq 1 ]; then
+		log "  [dry-run] would install:$available"
+		return 0
+	fi
+	log "  install$available"
+	# shellcheck disable=SC2086
+	sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq $available >/dev/null
 }
 
 is_tool() {
 	[ -f "$1/links" ] || [ -f "$1/packages" ]
+}
+
+# Remove a link created by link_file and put back the most recent backup of
+# what it replaced, if any. Leaves anything that isn't our link alone.
+unlink_file() {
+	local src="$1" dest="$2" rel="${2#"$HOME"/}"
+
+	if [ ! -L "$dest" ] || [ "$(readlink "$dest")" != "$src" ]; then
+		log "  skip    ~/$rel (not linked by dotfiles)"
+		return
+	fi
+
+	run rm "$dest"
+	local backup_root="$HOME/.dotfiles-backup" stamp
+	for stamp in $(ls -1 "$backup_root" 2>/dev/null | sort -r); do
+		if [ -e "$backup_root/$stamp/$rel" ] || [ -L "$backup_root/$stamp/$rel" ]; then
+			log "  restore ~/$rel <- ~/.dotfiles-backup/$stamp/$rel"
+			run mv "$backup_root/$stamp/$rel" "$dest"
+			return
+		fi
+	done
+	log "  unlink  ~/$rel"
 }
 
 install_tool() {
@@ -259,10 +290,14 @@ install_tool() {
 			echo "  $tool/links: source '$src' does not exist" >&2
 			return 1
 		fi
-		link_file "$dir/$src" "$HOME/$dest"
+		if [ "$UNLINK" -eq 1 ]; then
+			unlink_file "$dir/$src" "$HOME/$dest"
+		else
+			link_file "$dir/$src" "$HOME/$dest"
+		fi
 	done < <(if [ -f "$dir/links" ]; then cat "$dir/links"; fi)
 
-	if [ -x "$dir/setup" ]; then
+	if [ -x "$dir/setup" ] && [ "$UNLINK" -eq 0 ]; then
 		if [ "$RUN_SETUP" -eq 1 ] && [ "$DRY_RUN" -eq 0 ]; then
 			log "  setup"
 			"$dir/setup"
@@ -280,6 +315,7 @@ main() {
 		-n | --dry-run) DRY_RUN=1 ;;
 		--no-setup) RUN_SETUP=0 ;;
 		--no-packages) RUN_PACKAGES=0 ;;
+		--unlink) UNLINK=1 ;;
 		-h | --help)
 			usage
 			exit 0
@@ -319,7 +355,7 @@ main() {
 
 	# All packages first, in one go: fewer sudo prompts, and setup hooks can
 	# rely on them.
-	if [ "$RUN_PACKAGES" -eq 1 ]; then
+	if [ "$RUN_PACKAGES" -eq 1 ] && [ "$UNLINK" -eq 0 ]; then
 		install_packages "${tools[@]}"
 	fi
 

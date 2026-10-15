@@ -1,0 +1,3 @@
+# source    target (relative to $HOME)
+# ~/.local/bin is on PATH (bash/extend.bashrc)
+dot         .local/bin/dot

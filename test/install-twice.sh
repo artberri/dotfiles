@@ -3,7 +3,9 @@
 # Run ./install twice and fail if:
 # - either run fails,
 # - the second run changes anything (install must be idempotent), or
-# - the shell config prints errors when loaded by any bash on the system.
+# - the shell config prints errors when loaded by any bash on the system,
+# - `dot doctor` reports problems right after installing, or
+# - `./install --unlink` leaves links into the repo behind.
 #
 # Changes the real system and $HOME: only run it on a throwaway machine
 # (CI runner, container).
@@ -48,4 +50,22 @@ for shell in $shells; do
 		echo "$shell ($("$shell" -c 'echo $BASH_VERSION')) loads the shell config cleanly"
 	fi
 done
+
+echo "::group::dot doctor"
+if ! dot/dot doctor; then
+	echo "::error::dot doctor reported problems right after installing"
+	status=1
+fi
+echo "::endgroup::"
+
+echo "::group::Unlink"
+./install --unlink
+left="$(find "$HOME" -maxdepth 4 -type l -lname "$PWD/*" 2>/dev/null || true)"
+if [ -n "$left" ]; then
+	echo "::error::Links into the repo left after --unlink:"
+	printf '%s\n' "$left"
+	status=1
+fi
+echo "::endgroup::"
+
 exit "$status"

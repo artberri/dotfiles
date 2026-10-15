@@ -14,13 +14,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: ShellCheck
-        run: shellcheck -S warning install */setup bash/extend.bashrc test/*.sh
+        run: shellcheck -S warning install */setup dot/dot bash/extend.bashrc test/*.sh
       - name: shfmt
         run: |
           curl -fsSL -o "$RUNNER_TEMP/shfmt" \
             https://github.com/mvdan/sh/releases/download/v3.10.0/shfmt_v3.10.0_linux_amd64
           chmod +x "$RUNNER_TEMP/shfmt"
-          "$RUNNER_TEMP/shfmt" -d install */setup bash/extend.bashrc test/*.sh
+          "$RUNNER_TEMP/shfmt" -d install */setup dot/dot bash/extend.bashrc test/*.sh
 
   linux:
     runs-on: ubuntu-24.04

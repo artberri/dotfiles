@@ -84,10 +84,14 @@ docker run --rm -v "$PWD:/src:ro" ubuntu:24.04 sh /src/test/container.sh
 
 ## Updating
 
+`./install` links a `dot` command into `~/.local/bin` (on PATH), so from anywhere:
+
 ```bash
-cd ~/.dotfiles
-git pull
-./install
+dot update          # git pull, then ./install
+dot doctor          # is this machine in sync with the repo? (links, packages, unpushed or missing commits)
+dot install [args]  # ./install with any of its options
+dot unlink [tool…]  # remove the links and restore the latest backups (packages stay installed)
+dot dir             # print the repo path, e.g. cd "$(dot dir)"
 ```
 
 ## Machine-specific config
