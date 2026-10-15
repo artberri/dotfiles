@@ -178,7 +178,8 @@ install_packages() {
 			echo "and re-run, or use --no-packages." >&2
 			exit 1
 		fi
-		BREW_INSTALLED="$(brew list --formula -1 | tr '\n' ' ')"
+		# Formulae and casks (e.g. ghostty), as `brew install` handles both.
+		BREW_INSTALLED="$({ brew list --formula -1; brew list --cask -1; } | tr '\n' ' ')"
 	fi
 
 	log "==> packages ($DOTFILES_PKG_MANAGER)"

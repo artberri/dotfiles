@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+#
+# - Warn if Ghostty itself couldn't be installed (not in apt before Ubuntu
+#   26.04, nor in Debian).
+# - Install the font the config uses if no installed font provides it.
+
+set -euo pipefail
+
+FONT_FAMILY="FiraCode Nerd Font"
+FONT_CASK="font-fira-code-nerd-font"
+# Official Nerd Fonts release archive for the family above
+FONT_ARCHIVE="https://github.com/ryanoasis/nerd-fonts/releases/latest/download/FiraCode.tar.xz"
+
+if ! command -v ghostty >/dev/null 2>&1; then
+	echo "  Ghostty not installed and not available from this system's packages." >&2
+	echo "  See https://ghostty.org/docs/install/binary#linux (the config is linked" >&2
+	echo "  and will apply once it's installed)." >&2
+fi
+
+has_font() {
+	local fonts
+	if command -v ghostty >/dev/null 2>&1; then
+		# On Linux fontconfig answers with the closest match (e.g. DejaVu Sans
+		# Mono) when the family is missing, so check the family name itself.
+		fonts="$(ghostty +list-fonts --family="$FONT_FAMILY" 2>/dev/null || true)"
+		printf '%s\n' "$fonts" | grep -v '^[[:space:]]' | grep -qixF "$FONT_FAMILY"
+	elif command -v fc-list >/dev/null 2>&1; then
+		fonts="$(fc-list : family)"
+		printf '%s\n' "$fonts" | tr ',' '\n' | grep -qixF "$FONT_FAMILY"
+	else
+		return 1
+	fi
+}
+
+if has_font; then
+	echo "  Font '$FONT_FAMILY' already installed"
+	exit 0
+fi
+
+if [ "$DOTFILES_OS" = macos ]; then
+	echo "  brew install --cask $FONT_CASK"
+	brew install --cask "$FONT_CASK"
+elif command -v curl >/dev/null 2>&1 && command -v tar >/dev/null 2>&1 && command -v xz >/dev/null 2>&1; then
+	font_dir="${XDG_DATA_HOME:-$HOME/.local/share}/fonts/FiraCodeNerdFont"
+	echo "  Installing '$FONT_FAMILY' into ${font_dir/#"$HOME"/~}"
+	mkdir -p "$font_dir"
+	curl -fsSL "$FONT_ARCHIVE" | tar -xJ -C "$font_dir"
+	if command -v fc-cache >/dev/null 2>&1; then
+		fc-cache -f "$font_dir" >/dev/null
+	fi
+else
+	echo "  Font '$FONT_FAMILY' missing and curl/tar/xz unavailable; skipping" >&2
+fi

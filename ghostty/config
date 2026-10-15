@@ -1,0 +1,27 @@
+shell-integration = bash
+# Installed by ghostty/setup if missing
+font-family = "FiraCode Nerd Font"
+font-size = 20
+theme = "shades-of-purple"
+copy-on-select = clipboard
+# In bytes
+scrollback-limit = 30000000
+mouse-hide-while-typing = true
+window-save-state = always
+
+# Free these up before rebinding them below
+keybind = super+9=unbind
+keybind = super+k=unbind
+keybind = super+l=unbind
+keybind = super+c=unbind
+keybind = super+a=unbind
+keybind = super+enter=unbind
+
+keybind = super+j=goto_split:left
+keybind = super+k=goto_split:bottom
+keybind = super+l=goto_split:right
+keybind = super+i=goto_split:top
+keybind = super+u=previous_tab
+keybind = super+o=next_tab
+keybind = super+enter=toggle_split_zoom
+keybind = super+.=clear_screen

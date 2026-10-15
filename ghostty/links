@@ -1,0 +1,6 @@
+# source                   target (relative to $HOME)
+# Ghostty never writes to its config, so it can be linked directly. On macOS,
+# ~/Library/Application Support/com.mitchellh.ghostty/config (if present) is
+# loaded afterwards and works as a per-machine override.
+config                     .config/ghostty/config
+themes/shades-of-purple    .config/ghostty/themes/shades-of-purple

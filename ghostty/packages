@@ -1,0 +1,3 @@
+# brew name          options (see ./install)
+# Homebrew cask on macOS; in Ubuntu's apt from 26.04 (setup warns elsewhere).
+ghostty              cmd=ghostty

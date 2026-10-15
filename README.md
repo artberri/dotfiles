@@ -42,8 +42,15 @@ Packages come from **Homebrew** on macOS and **apt** on Debian/Ubuntu, and only 
 | jq, duf, bash-completion | 12+ | 22.04+ |
 | eza, git-delta | 13+ | 24.04+ |
 | starship | 13+ | 25.10+ |
+| ghostty | — | 26.04+ |
 
-Where apt doesn't have it, starship is installed with its [official installer](https://starship.rs) into `~/.local/bin`. eza and delta are skipped with a warning: the shell config falls back to plain `ls`, but git diffs need delta.
+Where apt doesn't have it, starship is installed with its [official installer](https://starship.rs) into `~/.local/bin`. eza and delta are skipped with a warning: the shell config falls back to plain `ls`, but git diffs need delta. Ghostty is skipped with a pointer to [its Linux install options](https://ghostty.org/docs/install/binary#linux) (community builds aren't installed automatically); its config is linked anyway and applies once it's installed.
+
+### Ghostty
+
+[Ghostty](https://ghostty.org) is the terminal on every machine. `./install ghostty` installs it (Homebrew cask on macOS, apt on Ubuntu 26.04+), links its config and theme into `~/.config/ghostty/`, and installs FiraCode Nerd Font if no installed font provides it (Homebrew cask on macOS, the official [Nerd Fonts](https://www.nerdfonts.com) release into `~/.local/share/fonts` on Linux).
+
+On macOS, `~/Library/Application Support/com.mitchellh.ghostty/config` is loaded after the shared config, so it can hold per-machine overrides.
 
 ### Bash everywhere
 
