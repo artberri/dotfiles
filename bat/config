@@ -1,0 +1,10 @@
+# bat config, linked to ~/.config/bat/config
+
+# Use the terminal's own 16 colours, so bat follows the terminal theme
+# (Shades of Purple in Ghostty) instead of bringing a theme of its own.
+--theme="ansi"
+
+# Line numbers, git change markers and a file name header; no grid lines.
+--style="numbers,changes,header"
+
+--italic-text=always

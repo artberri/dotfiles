@@ -53,6 +53,10 @@ Where apt doesn't have it, starship is installed with its [official installer](h
 
 On macOS, `~/Library/Application Support/com.mitchellh.ghostty/config` is loaded after the shared config, so it can hold per-machine overrides.
 
+### bat
+
+`bat` (a `cat` with syntax highlighting) uses the terminal's colours, so it follows the Ghostty theme. It also highlights `man` pages and powers the file preview in fzf's Ctrl-T.
+
 ### Bash everywhere
 
 Bash is the shell on every machine, macOS included. `./install bash` links the shared config to `~/.extend.bashrc` and adds a line to `~/.bashrc` that loads it. On macOS it also makes Homebrew's up-to-date bash your login shell (the system `/bin/bash` is stuck at 3.2) and adds it to `/etc/shells`. It asks for your password for `sudo` and `chsh`.

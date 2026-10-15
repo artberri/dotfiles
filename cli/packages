@@ -1,7 +1,5 @@
 # General-purpose CLI tools that need no config of their own.
 # brew name          options (see ./install)
 gh                   cmd=gh
-# apt's bat installs the binary as `batcat`; cli/setup links it as `bat`.
-bat                  cmd=bat
 ripgrep              cmd=rg
 wget                 cmd=wget

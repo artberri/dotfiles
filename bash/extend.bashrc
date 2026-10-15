@@ -233,6 +233,18 @@ alias gl='g lg -5'
 # Installed and configured by starship/
 command -v starship >/dev/null 2>&1 && eval "$(starship init bash)"
 
+# --- bat ---------------------------------------------------------------------
+
+# Installed and configured by bat/
+if command -v bat >/dev/null 2>&1; then
+	# Syntax-highlighted man pages. MANROFFOPT=-c keeps newer groff (Linux)
+	# from emitting escape codes bat would show literally.
+	export MANPAGER="sh -c 'col -bx | bat --language=man --plain'"
+	export MANROFFOPT="-c"
+	# Preview files while picking them with fzf's Ctrl-T
+	export FZF_CTRL_T_OPTS="--preview 'bat --color=always --style=numbers --line-range=:300 {} 2>/dev/null || ls -la {}'"
+fi
+
 # --- Fuzzy finder and smarter cd ---------------------------------------------
 
 # fzf key bindings (Ctrl-R, Ctrl-T, Alt-C) and completion. `fzf --bash` only

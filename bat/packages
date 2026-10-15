@@ -1,0 +1,3 @@
+# brew name          options (see ./install)
+# apt installs the binary as `batcat`; bat/setup links it as `bat`.
+bat                  cmd=bat

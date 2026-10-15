@@ -1,0 +1,2 @@
+# source    target (relative to $HOME)
+config      .config/bat/config
