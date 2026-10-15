@@ -151,6 +151,53 @@ else
 fi
 command -v duf >/dev/null 2>&1 && alias df='duf'
 alias du='du -kh'
+alias ..='cd ..'
+alias ...='cd ../..'
+# Restart the shell in place, e.g. after changing this file
+alias reload='exec bash -l'
+
+# --- Functions ---------------------------------------------------------------
+
+# Print PATH one entry per line
+path() {
+	tr ':' '\n' <<<"$PATH"
+}
+
+# Create a directory (and parents) and cd into it
+mkd() {
+	mkdir -p -- "$1" && cd -- "$1" || return
+}
+
+# Extract any common archive. tar detects the compression itself (GNU tar and
+# macOS bsdtar alike).
+extract() {
+	if [ $# -eq 0 ]; then
+		echo "Usage: extract <archive>..." >&2
+		return 1
+	fi
+	local file
+	for file in "$@"; do
+		if [ ! -f "$file" ]; then
+			echo "extract: '$file' is not a file" >&2
+			return 1
+		fi
+		case "$file" in
+		*.tar | *.tar.* | *.tgz | *.tbz | *.tbz2 | *.txz | *.tzst) tar -xf "$file" ;;
+		*.zip | *.jar) unzip "$file" ;;
+		*.7z) 7z x "$file" ;;
+		*.rar) unrar x "$file" ;;
+		*.gz) gunzip -k "$file" ;;
+		*.bz2) bunzip2 -k "$file" ;;
+		*.xz) xz -dk "$file" ;;
+		*.zst) zstd -d "$file" ;;
+		*.Z) uncompress "$file" ;;
+		*)
+			echo "extract: don't know how to extract '$file'" >&2
+			return 1
+			;;
+		esac || return
+	done
+}
 
 # Git. Most of these rely on aliases defined in ~/.gitconfig
 # (p, h, ci, co, st, lg), see git/gitconfig.
