@@ -21,8 +21,12 @@ fi
 
 has_font() {
 	local fonts
-	# Installed by us before (also covers systems without fontconfig)
-	if [ -n "$(ls -A "$FONT_DIR" 2>/dev/null)" ]; then
+	# Installed by us before. Checked first because font lookups may not see
+	# a just-installed font yet (macOS without a GUI session) or at all
+	# (Linux without fontconfig).
+	if [ "$DOTFILES_OS" = macos ]; then
+		brew list --cask "$FONT_CASK" >/dev/null 2>&1 && return 0
+	elif [ -n "$(ls -A "$FONT_DIR" 2>/dev/null)" ]; then
 		return 0
 	fi
 	if command -v ghostty >/dev/null 2>&1; then
