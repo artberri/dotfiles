@@ -48,7 +48,7 @@ When a task requires choosing a structure or a new tool, propose the options wit
 ## Hard rules
 
 1. **This repository is public.** Never commit secrets, tokens, API keys, SSH/GPG private keys, passwords, internal hostnames, work-related identifiers or any personal data beyond what's already public (name, GitHub handle). Use placeholders; real values belong in machine-owned files (`~/.bashrc.local`, `~/.gitconfig`). If you spot a secret in a file or diff, stop and flag it.
-2. **Never touch the real `$HOME` without explicit permission.** Don't run install/bootstrap scripts, create symlinks or overwrite files outside this repo unless the user asks for it. Test against a temporary `HOME` instead (e.g. `HOME="$(mktemp -d)" ./install --dry-run`). Package installs and setup hooks change the real system even with a temporary `HOME`; test those in a throwaway container (e.g. `docker run --rm -v "$PWD:/src:ro" ubuntu:24.04 …`) as a non-root user with sudo.
+2. **Never touch the real `$HOME` without explicit permission.** Don't run install/bootstrap scripts, create symlinks or overwrite files outside this repo unless the user asks for it. Test against a temporary `HOME` instead (e.g. `HOME="$(mktemp -d)" ./install --dry-run`). Package installs and setup hooks change the real system even with a temporary `HOME`; test those in a throwaway container with `docker run --rm -v "$PWD:/src:ro" <image> sh /src/test/container.sh` (runs `test/install-twice.sh` as a non-root sudo user, like CI).
 3. **Never overwrite existing user files silently.** Install scripts must back up (or skip and warn about) any pre-existing file before replacing it.
 4. **Keep it idempotent.** Running any install script twice must produce the same result and no errors.
 
@@ -72,7 +72,7 @@ When a task requires choosing a structure or a new tool, propose the options wit
 
 - Start with a shebang (`#!/usr/bin/env bash` or `#!/bin/sh`) and `set -euo pipefail` for Bash scripts.
 - Quote variables, use `"$HOME"` rather than `~` inside scripts, and never hard-code `/Users/<name>` or `/home/<name>`.
-- Lint with [ShellCheck](https://www.shellcheck.net/) and format with [shfmt](https://github.com/mvdan/sh) when available.
+- Lint with [ShellCheck](https://www.shellcheck.net/) (`-S warning`) and format with [shfmt](https://github.com/mvdan/sh) (defaults: tabs). CI enforces both.
 - Keep shell startup fast: avoid slow commands (network calls, `brew --prefix` in loops, heavy `eval`s) in rc files; cache where possible.
 
 ## Config files
@@ -82,6 +82,8 @@ When a task requires choosing a structure or a new tool, propose the options wit
 - Don't add configs for tools the user didn't ask for.
 
 ## Workflow
+
+- CI (`.github/workflows/ci.yml`) must stay green: it runs `./install` twice on every supported platform and fails on any change in the second run or any error while loading the shell config. When adding output to `install` or a `setup` hook that signals a change, start the line with one of the verbs `test/install-twice.sh` looks for (`link`, `backup`, `install`, `Adding`, `Creating`, `Installing`, `Linking`, `Changing`, `brew install`).
 
 - Keep changes small and focused; one topic per commit.
 - Update `README.md` when installation steps, requirements or layout change, and update this file when a convention is decided.

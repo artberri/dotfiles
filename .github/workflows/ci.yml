@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  # Weekly, to catch distro and Homebrew package changes
+  schedule:
+    - cron: "0 6 * * 1"
+
+jobs:
+  lint:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: ShellCheck
+        run: shellcheck -S warning install */setup bash/extend.bashrc test/*.sh
+      - name: shfmt
+        run: |
+          curl -fsSL -o "$RUNNER_TEMP/shfmt" \
+            https://github.com/mvdan/sh/releases/download/v3.10.0/shfmt_v3.10.0_linux_amd64
+          chmod +x "$RUNNER_TEMP/shfmt"
+          "$RUNNER_TEMP/shfmt" -d install */setup bash/extend.bashrc test/*.sh
+
+  linux:
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        # Supported: Debian/Ubuntu. Fedora checks the "unsupported distro" path.
+        image: ["ubuntu:24.04", "ubuntu:26.04", "debian:12", "debian:13", "fedora:42"]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install twice in ${{ matrix.image }}
+        run: docker run --rm -v "$PWD:/src:ro" "${{ matrix.image }}" sh /src/test/container.sh
+
+  macos:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      # chsh asks for a password the runner doesn't have; set the login shell
+      # bash/setup would pick beforehand so setup sees nothing to change.
+      - name: Make Homebrew's bash the login shell
+        run: |
+          brew install bash
+          bash_path="$(brew --prefix)/bin/bash"
+          grep -qxF "$bash_path" /etc/shells || echo "$bash_path" | sudo tee -a /etc/shells
+          sudo chsh -s "$bash_path" "$USER"
+      - name: Install twice
+        run: test/install-twice.sh

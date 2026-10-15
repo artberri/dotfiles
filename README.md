@@ -1,5 +1,7 @@
 # artberri/dotfiles
 
+[![CI](https://github.com/artberri/dotfiles/actions/workflows/ci.yml/badge.svg)](https://github.com/artberri/dotfiles/actions/workflows/ci.yml)
+
 My personal configuration files ([@artberri](https://github.com/artberri)), shared across the machines I use, both **macOS** and **Linux**.
 
 It replaces my previous, now archived, Ansible-based setup: [artberri/devenv](https://github.com/artberri/devenv).
@@ -68,6 +70,16 @@ bash/
 git/
   ...
 install
+```
+
+## Testing
+
+CI runs on every push and weekly: ShellCheck and shfmt, then `./install` **twice** on Ubuntu 24.04/26.04, Debian 12/13, Fedora (the unsupported-distro path) and macOS. It fails if the second run changes anything or if the shell config prints errors in any bash on the system (including macOS's `/bin/bash` 3.2).
+
+To run a Linux check locally (it changes the container, never your machine):
+
+```bash
+docker run --rm -v "$PWD:/src:ro" ubuntu:24.04 sh /src/test/container.sh
 ```
 
 ## Updating

@@ -183,7 +183,10 @@ install_packages() {
 			exit 1
 		fi
 		# Formulae and casks (e.g. ghostty), as `brew install` handles both.
-		BREW_INSTALLED="$({ brew list --formula -1; brew list --cask -1; } | tr '\n' ' ')"
+		BREW_INSTALLED="$({
+			brew list --formula -1
+			brew list --cask -1
+		} | tr '\n' ' ')"
 	fi
 
 	log "==> packages ($DOTFILES_PKG_MANAGER)"
@@ -233,12 +236,12 @@ install_packages() {
 	fi
 }
 
-install_tool() {
-	local tool="$1" dir="$DOTFILES_DIR/$1"
-
 is_tool() {
 	[ -f "$1/links" ] || [ -f "$1/packages" ]
 }
+
+install_tool() {
+	local tool="$1" dir="$DOTFILES_DIR/$1"
 
 	log "==> $tool"
 
