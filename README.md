@@ -15,7 +15,7 @@ My personal configuration files ([@artberri](https://github.com/artberri)), shar
 
 ## Installation
 
-Requirements: `git`, and on macOS [Homebrew](https://brew.sh).
+Requirements: `git`, and on macOS [Homebrew](https://brew.sh). Linux support targets **Debian and Ubuntu**; other distros get the links and config but must install packages by hand.
 
 ```bash
 git clone https://github.com/artberri/dotfiles.git ~/.dotfiles
@@ -23,26 +23,40 @@ cd ~/.dotfiles
 ./install
 ```
 
-`install` is a small, dependency-free Bash script that symlinks the files in this repo into `$HOME`. Because they are symlinks, editing a config in the repo takes effect immediately. Existing files are moved to `<file>.backup.<timestamp>` before being replaced, and re-running it is safe.
+`install` is a small, dependency-free Bash script that installs the packages the configs rely on (eza, duf, jq, starship, delta…) and symlinks the files in this repo into `$HOME`. Because they are symlinks, editing a config in the repo takes effect immediately. Existing files are moved to `<file>.backup.<timestamp>` before being replaced, and re-running it is safe.
 
 ```bash
 ./install              # all tools
 ./install bash         # only some tools
 ./install --dry-run    # show what would change
-./install --no-setup   # only create links, skip setup hooks
+./install --no-packages  # skip installing packages
+./install --no-setup   # skip setup hooks
 ```
+
+### Packages
+
+Packages come from **Homebrew** on macOS and **apt** on Debian/Ubuntu, and only missing ones are installed, so re-running is quick and doesn't ask for `sudo` when there's nothing to do. Some tools only exist in recent releases' apt repositories:
+
+| Package | Debian | Ubuntu |
+|---|---|---|
+| jq, duf, bash-completion | 12+ | 22.04+ |
+| eza, git-delta | 13+ | 24.04+ |
+| starship | 13+ | 25.10+ |
+
+Where apt doesn't have it, starship is installed with its [official installer](https://starship.rs) into `~/.local/bin`. eza and delta are skipped with a warning: the shell config falls back to plain `ls`, but git diffs need delta.
 
 ### Bash everywhere
 
-Bash is the shell on every machine, macOS included. `./install bash` links the shared config to `~/.extend.bashrc` and adds a line to `~/.bashrc` that loads it. On macOS it also installs an up-to-date bash and bash-completion with Homebrew (the system `/bin/bash` is stuck at 3.2), adds it to `/etc/shells` and makes it your login shell. It asks for your password for `sudo` and `chsh`.
+Bash is the shell on every machine, macOS included. `./install bash` links the shared config to `~/.extend.bashrc` and adds a line to `~/.bashrc` that loads it. On macOS it also makes Homebrew's up-to-date bash your login shell (the system `/bin/bash` is stuck at 3.2) and adds it to `/etc/shells`. It asks for your password for `sudo` and `chsh`.
 
 ## Layout
 
-One folder per tool. Each folder has a `links` file listing what to symlink where, and optionally a `setup` script for anything that isn't a file (installing packages, changing the shell…).
+One folder per tool. Each folder has a `links` file listing what to symlink where, optionally a `packages` file listing what it needs installed, and optionally a `setup` script for anything else (changing the shell…).
 
 ```text
 bash/
   links          # "<source> <target relative to $HOME> [macos|linux]" per line
+  packages       # optional: "<brew name> [apt=<name>|apt=-] [cmd=<command>]" per line
   extend.bashrc
   setup          # optional
 git/

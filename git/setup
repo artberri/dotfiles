@@ -2,7 +2,7 @@
 #
 # - Make sure ~/.gitconfig exists, so `git config --global` (and tools that
 #   use it) write there instead of into the linked ~/.config/git/config.
-# - Install delta, the pager configured in gitconfig.
+# - Warn if delta, the pager configured in gitconfig, is missing.
 
 set -euo pipefail
 
@@ -11,12 +11,9 @@ if [ ! -e "$HOME/.gitconfig" ]; then
 	printf '# Machine-specific git config (email, includeIf…). Overrides ~/.config/git/config.\n' >"$HOME/.gitconfig"
 fi
 
-if command -v delta >/dev/null 2>&1; then
-	echo "  delta already installed"
-elif [ "$DOTFILES_OS" = macos ] && command -v brew >/dev/null 2>&1; then
-	echo "  brew install git-delta"
-	brew install git-delta
-else
+# delta is installed by ./install (git/packages), but it isn't in apt on
+# older releases (before Debian 13 / Ubuntu 24.04).
+if ! command -v delta >/dev/null 2>&1; then
 	echo "  delta not found; git diffs will fail until it is installed:" >&2
 	echo "  https://dandavison.github.io/delta/installation.html" >&2
 fi

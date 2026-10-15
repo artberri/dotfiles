@@ -1,11 +1,20 @@
 #!/usr/bin/env bash
 #
-# Symlink dotfiles into $HOME and run per-tool setup hooks.
+# Install packages, symlink dotfiles into $HOME and run per-tool setup hooks.
 #
 # Each top-level directory with a `links` file is a "tool". Every line in
 # `links` is:
 #
 #   <source relative to tool dir>  <target relative to $HOME>  [macos|linux]
+#
+# An optional `packages` file lists what the tool needs, one per line:
+#
+#   <brew name>  [apt=<name>|apt=-]  [cmd=<command>]
+#
+# apt= overrides the package name on Debian/Ubuntu (- = not in apt, skip).
+# cmd= skips the package when that command is already on PATH, whoever
+# installed it. Packages are installed with Homebrew on macOS and apt on
+# Debian/Ubuntu; other distros get a warning.
 #
 # An optional executable `setup` script in the tool directory runs after its
 # links are in place. Hooks must be idempotent.
@@ -17,6 +26,7 @@ set -euo pipefail
 DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
 DRY_RUN=0
 RUN_SETUP=1
+RUN_PACKAGES=1
 
 case "$(uname -s)" in
 Darwin) DOTFILES_OS=macos ;;
@@ -26,18 +36,37 @@ Linux) DOTFILES_OS=linux ;;
 	exit 1
 	;;
 esac
-export DOTFILES_DIR DOTFILES_OS
+
+# Package manager: brew on macOS, apt on Debian/Ubuntu, empty otherwise.
+DOTFILES_PKG_MANAGER=
+DISTRO=
+if [ "$DOTFILES_OS" = macos ]; then
+	DOTFILES_PKG_MANAGER=brew
+elif [ -r /etc/os-release ]; then
+	DISTRO="$(. /etc/os-release && echo "${ID:-unknown}")"
+	case " $DISTRO $(. /etc/os-release && echo "${ID_LIKE:-}") " in
+	*" debian "* | *" ubuntu "*) DOTFILES_PKG_MANAGER=apt ;;
+	esac
+fi
+export DOTFILES_DIR DOTFILES_OS DOTFILES_PKG_MANAGER
+
+# Tools installed without a package manager (e.g. starship on Linux) live
+# here; make them visible to the "already installed" checks and hooks.
+case ":$PATH:" in *":$HOME/.local/bin:"*) ;; *) PATH="$HOME/.local/bin:$PATH" ;; esac
+export PATH
 
 usage() {
 	cat <<USAGE
 Usage: ./install [options] [tool...]
 
-Symlink the given tools (default: all) into \$HOME and run their setup hooks.
+Install the packages the given tools (default: all) need, symlink them into
+\$HOME and run their setup hooks.
 
 Options:
-  -n, --dry-run   Print what would be done without changing anything
-      --no-setup  Only create links, skip setup hooks
-  -h, --help      Show this help
+  -n, --dry-run      Print what would be done without changing anything
+      --no-packages  Skip installing packages
+      --no-setup     Skip setup hooks
+  -h, --help         Show this help
 USAGE
 }
 
@@ -69,6 +98,134 @@ link_file() {
 	log "  link    ~/${dest#"$HOME"/}"
 	run mkdir -p "$(dirname "$dest")"
 	run ln -s "$src" "$dest"
+}
+
+# Make brew available in this process if it's installed but not on PATH yet
+# (e.g. right after installing Homebrew).
+load_brew() {
+	command -v brew >/dev/null 2>&1 && return 0
+	local brew
+	for brew in /opt/homebrew/bin/brew /usr/local/bin/brew; do
+		if [ -x "$brew" ]; then
+			eval "$("$brew" shellenv)"
+			return 0
+		fi
+	done
+	return 1
+}
+
+is_installed() {
+	case "$DOTFILES_PKG_MANAGER" in
+	brew) case " $BREW_INSTALLED " in *" $1 "*) return 0 ;; esac ;;
+	apt) dpkg-query -W -f='${Status}' "$1" 2>/dev/null | grep -q 'install ok installed' && return 0 ;;
+	esac
+	return 1
+}
+
+# Print the missing packages (for the current package manager) of a tool.
+missing_packages() {
+	local tool="$1" file="$DOTFILES_DIR/$1/packages"
+	[ -f "$file" ] || return 0
+
+	local name rest field apt cmd pkg
+	while read -r name rest || [ -n "$name" ]; do
+		case "$name" in '' | '#'*) continue ;; esac
+		apt="$name" cmd=
+		for field in $rest; do
+			case "$field" in
+			apt=*) apt="${field#apt=}" ;;
+			cmd=*) cmd="${field#cmd=}" ;;
+			*)
+				echo "  $tool/packages: unknown field '$field'" >&2
+				return 1
+				;;
+			esac
+		done
+
+		if [ -n "$cmd" ] && command -v "$cmd" >/dev/null 2>&1; then
+			continue
+		fi
+		if [ "$DOTFILES_PKG_MANAGER" = apt ]; then
+			pkg="$apt"
+		else
+			pkg="$name"
+		fi
+		if [ "$pkg" = - ]; then
+			echo "  $name: not available via $DOTFILES_PKG_MANAGER, skipped" >&2
+			continue
+		fi
+		is_installed "$pkg" || echo "$pkg"
+	done <"$file"
+}
+
+install_packages() {
+	local tools="$*" tool missing="" pkg
+
+	if [ -z "$DOTFILES_PKG_MANAGER" ]; then
+		log "==> packages"
+		log "  Unsupported distro '${DISTRO:-unknown}': only Debian/Ubuntu (apt) are supported."
+		log "  Install these yourself if you want them (Homebrew names, may differ):"
+		for tool in $tools; do
+			[ -f "$DOTFILES_DIR/$tool/packages" ] || continue
+			log "    $tool: $(grep -vE '^[[:space:]]*(#|$)' "$DOTFILES_DIR/$tool/packages" | awk '{print $1}' | tr '\n' ' ')"
+		done
+		return 0
+	fi
+
+	if [ "$DOTFILES_PKG_MANAGER" = brew ]; then
+		if ! load_brew; then
+			echo "Homebrew is required on macOS. Install it from https://brew.sh" >&2
+			echo "and re-run, or use --no-packages." >&2
+			exit 1
+		fi
+		BREW_INSTALLED="$(brew list --formula -1 | tr '\n' ' ')"
+	fi
+
+	log "==> packages ($DOTFILES_PKG_MANAGER)"
+	for tool in $tools; do
+		for pkg in $(missing_packages "$tool"); do
+			case " $missing " in *" $pkg "*) ;; *) missing="$missing $pkg" ;; esac
+		done
+	done
+	missing="${missing# }"
+
+	if [ -z "$missing" ]; then
+		log "  ok      everything installed"
+		return 0
+	fi
+
+	if [ "$DRY_RUN" -eq 1 ]; then
+		log "  [dry-run] would install: $missing"
+		return 0
+	fi
+
+	if [ "$DOTFILES_PKG_MANAGER" = brew ]; then
+		log "  install $missing"
+		# shellcheck disable=SC2086
+		brew install $missing
+		return 0
+	fi
+
+	# apt: refresh the index unless it's less than a day old (so re-runs
+	# with permanently unavailable packages don't prompt for sudo), then
+	# install what exists in this release.
+	if [ -z "$(find /var/lib/apt/lists -maxdepth 1 -name '*Packages*' -mmin -1440 2>/dev/null | head -n 1)" ]; then
+		log "  sudo apt-get update"
+		sudo apt-get update -qq
+	fi
+	local available=""
+	for pkg in $missing; do
+		if apt-cache show "$pkg" >/dev/null 2>&1; then
+			available="$available $pkg"
+		else
+			log "  $pkg: not in this release's repositories, skipped"
+		fi
+	done
+	if [ -n "$available" ]; then
+		log "  install$available"
+		# shellcheck disable=SC2086
+		sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq $available >/dev/null
+	fi
 }
 
 install_tool() {
@@ -115,6 +272,7 @@ main() {
 		case "$1" in
 		-n | --dry-run) DRY_RUN=1 ;;
 		--no-setup) RUN_SETUP=0 ;;
+		--no-packages) RUN_PACKAGES=0 ;;
 		-h | --help)
 			usage
 			exit 0
@@ -144,6 +302,19 @@ main() {
 	fi
 
 	local tool
+	for tool in "${tools[@]}"; do
+		if [ ! -f "$DOTFILES_DIR/$tool/links" ]; then
+			echo "Unknown tool: $tool (no $tool/links file)" >&2
+			exit 1
+		fi
+	done
+
+	# All packages first, in one go: fewer sudo prompts, and setup hooks can
+	# rely on them.
+	if [ "$RUN_PACKAGES" -eq 1 ]; then
+		install_packages "${tools[@]}"
+	fi
+
 	for tool in "${tools[@]}"; do
 		install_tool "$tool"
 	done

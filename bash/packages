@@ -1,0 +1,8 @@
+# brew name          options (see ./install)
+bash
+bash-completion@2    apt=bash-completion
+eza                  cmd=eza
+duf                  cmd=duf
+jq                   cmd=jq
+# Not in Ubuntu 24.04's apt; bash/setup falls back to the official installer.
+starship             cmd=starship

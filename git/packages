@@ -1,0 +1,2 @@
+# brew name          options (see ./install)
+git-delta            cmd=delta

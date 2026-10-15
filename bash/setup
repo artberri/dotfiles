@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 #
 # - Make ~/.bashrc load ~/.extend.bashrc (and ~/.bash_profile load ~/.bashrc).
+# - Install starship on Linux if apt didn't have it.
 # - Make an up-to-date bash the login shell. On macOS that means Homebrew's
 #   bash, since /bin/bash is stuck at 3.2.
 #
@@ -32,32 +33,48 @@ if [ -f "$HOME/.bash_profile" ] || [ "$DOTFILES_OS" = macos ]; then
 		'[ -f "$HOME/.bashrc" ] && . "$HOME/.bashrc"'
 fi
 
-if [ "$DOTFILES_OS" = macos ]; then
-	if ! command -v brew >/dev/null 2>&1; then
-		for brew in /opt/homebrew/bin/brew /usr/local/bin/brew; do
-			if [ -x "$brew" ]; then
-				eval "$("$brew" shellenv)"
-				break
-			fi
-		done
+# starship isn't in apt on some releases (e.g. Ubuntu 24.04): use its
+# official installer, into ~/.local/bin so it needs no sudo.
+if ! command -v starship >/dev/null 2>&1 && [ "$DOTFILES_OS" = linux ]; then
+	if command -v curl >/dev/null 2>&1; then
+		echo "  Installing starship with its official installer into ~/.local/bin"
+		mkdir -p "$HOME/.local/bin"
+		curl -fsSL https://starship.rs/install.sh | sh -s -- --yes --bin-dir "$HOME/.local/bin" >/dev/null
+	else
+		echo "  starship not installed and curl is missing; skipping" >&2
 	fi
-	if ! command -v brew >/dev/null 2>&1; then
-		echo "  Homebrew not found. Install it from https://brew.sh and re-run: ./install bash" >&2
-		exit 1
-	fi
+fi
 
-	for formula in bash bash-completion@2; do
-		if ! brew list --formula "$formula" >/dev/null 2>&1; then
-			echo "  brew install $formula"
-			brew install "$formula"
+if [ "$DOTFILES_OS" = macos ]; then
+	# Homebrew's bash is installed by ./install (bash/packages).
+	brew_prefix=
+	for prefix in /opt/homebrew /usr/local; do
+		if [ -x "$prefix/bin/brew" ]; then
+			brew_prefix="$prefix"
+			break
 		fi
 	done
-
-	bash_path="$(brew --prefix)/bin/bash"
+	bash_path="$brew_prefix/bin/bash"
+	if [ -z "$brew_prefix" ] || [ ! -x "$bash_path" ]; then
+		echo "  Homebrew's bash not found; run ./install without --no-packages. Login shell unchanged." >&2
+		exit 0
+	fi
 	current_shell="$(dscl . -read "/Users/$(id -un)" UserShell | awk '{print $2}')"
 else
-	bash_path="$(command -v bash)"
 	current_shell="$(getent passwd "$(id -un)" | cut -d: -f7)"
+	# Any bash will do: /bin/bash and /usr/bin/bash are the same file on
+	# merged-/usr distros, so don't compare paths.
+	case "$current_shell" in
+	*/bash)
+		echo "  Login shell is already $current_shell"
+		exit 0
+		;;
+	esac
+	if grep -qxF /bin/bash /etc/shells; then
+		bash_path=/bin/bash
+	else
+		bash_path="$(command -v bash)"
+	fi
 fi
 
 if ! grep -qxF "$bash_path" /etc/shells; then

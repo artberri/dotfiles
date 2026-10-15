@@ -20,6 +20,7 @@ The repo is at an early stage. When a task requires choosing a structure or a ne
   ```text
   bash/
     links          # what to symlink, one entry per line
+    packages       # optional, what to install, one package per line
     extend.bashrc  # config files, named without the leading dot
     setup          # optional, executable, idempotent hook run after linking
   ```
@@ -30,15 +31,24 @@ The repo is at an early stage. When a task requires choosing a structure or a ne
   <source relative to the tool folder>  <target relative to $HOME>  [macos|linux]
   ```
 
-  The optional third column restricts an entry to one OS. `setup` hooks get `DOTFILES_DIR` and `DOTFILES_OS` (`macos`/`linux`) in the environment. Hooks may change system state (install packages, `chsh`), so never run them while testing unless the user asks; use `./install --no-setup` or `--dry-run`.
+  `packages` format (`#` comments):
+
+  ```text
+  <brew name>  [apt=<name>|apt=-]  [cmd=<command>]
+  ```
+
+  `apt=` sets the apt name when it differs (`-` = not in apt). `cmd=` skips the package if that command is already on PATH, however it was installed.
+
+  The optional third column of `links` restricts an entry to one OS. `setup` hooks get `DOTFILES_DIR` and `DOTFILES_OS` (`macos`/`linux`) in the environment. Hooks may change system state (install packages, `chsh`), so never run them while testing unless the user asks; use `./install --no-setup` or `--dry-run`.
 - **Machine-owned rc files are never symlinked.** `~/.bashrc`, `~/.bash_profile` and `~/.gitconfig` stay regular files on each machine, because tool installers write to them and those changes must not dirty this repo. Shared config lives in files they load: `~/.extend.bashrc` (sourced from `~/.bashrc`, a line added by `bash/setup`) and `~/.config/git/config` (read by git alongside `~/.gitconfig`, which wins). Hand-written machine-specific shell config goes in `~/.bashrc.local`, which `extend.bashrc` sources last. Follow the same pattern for new tools: link a file the tool *includes*, not the file installers edit.
-- **Shell: bash everywhere**, including macOS. `bash/setup` installs Homebrew's `bash` and `bash-completion@2` on macOS, registers it in `/etc/shells` and makes it the login shell. `bash/extend.bashrc` must still load without errors under `/bin/bash` 3.2 (guard bash 4+ features).
+- **Packages: Homebrew on macOS, apt on Debian/Ubuntu.** No Homebrew on Linux. Other distros get a warning listing what to install by hand, and the rest of the install still runs. `./install` installs all tools' missing packages in one batch before linking (skip with `--no-packages`), and only runs `apt-get update` when the index is over a day old. When a package isn't in a release's apt (e.g. starship on Ubuntu 24.04), the tool's `setup` hook may fall back to the project's official installer into `~/.local/bin`, without sudo. Configs must keep working when an optional package is missing (see "Check that a command exists" below).
+- **Shell: bash everywhere**, including macOS. `bash/packages` installs Homebrew's `bash` and `bash-completion@2` on macOS; `bash/setup` registers it in `/etc/shells` and makes it the login shell. `bash/extend.bashrc` must still load without errors under `/bin/bash` 3.2 (guard bash 4+ features).
 - **License:** [0BSD](LICENSE).
 
 ## Hard rules
 
 1. **This repository is public.** Never commit secrets, tokens, API keys, SSH/GPG private keys, passwords, internal hostnames, work-related identifiers or any personal data beyond what's already public (name, GitHub handle). Use placeholders; real values belong in machine-owned files (`~/.bashrc.local`, `~/.gitconfig`). If you spot a secret in a file or diff, stop and flag it.
-2. **Never touch the real `$HOME` without explicit permission.** Don't run install/bootstrap scripts, create symlinks or overwrite files outside this repo unless the user asks for it. Test against a temporary `HOME` instead (e.g. `HOME="$(mktemp -d)" ./install`).
+2. **Never touch the real `$HOME` without explicit permission.** Don't run install/bootstrap scripts, create symlinks or overwrite files outside this repo unless the user asks for it. Test against a temporary `HOME` instead (e.g. `HOME="$(mktemp -d)" ./install --dry-run`). Package installs and setup hooks change the real system even with a temporary `HOME`; test those in a throwaway container (e.g. `docker run --rm -v "$PWD:/src:ro" ubuntu:24.04 …`) as a non-root user with sudo.
 3. **Never overwrite existing user files silently.** Install scripts must back up (or skip and warn about) any pre-existing file before replacing it.
 4. **Keep it idempotent.** Running any install script twice must produce the same result and no errors.
 
