@@ -125,6 +125,12 @@ if command -v jq >/dev/null 2>&1; then
 	complete -o default -F _yarn_complete yarn
 fi
 
+# --- GPG ---------------------------------------------------------------------
+
+# Lets gpg ask for passphrases in this terminal when no GUI pinentry is set up
+GPG_TTY="$(tty)"
+export GPG_TTY
+
 # --- Colors ------------------------------------------------------------------
 
 if command -v dircolors >/dev/null 2>&1; then

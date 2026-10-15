@@ -105,14 +105,48 @@ The shared config is loaded alongside them instead:
 
 Your own hand-written, machine-specific shell config (aliases, work shortcuts, completions) goes in **`~/.bashrc.local`**. `~/.extend.bashrc` loads it at the end, so it can override anything shared. It is never committed, and unlike `~/.bashrc` no installer writes to it.
 
-For example, a `~/.gitconfig` that sets a different email per directory:
+For example, a `~/.gitconfig` that sets a different identity per directory:
 
 ```gitconfig
 [includeIf "gitdir:~/work/"]
 	path = ~/.gitconfig.work
 [includeIf "gitdir:~/personal/"]
 	path = ~/.gitconfig.personal
+# This repo too, or its commits get an address git makes up from the
+# hostname (user@host.local), which ends up public on GitHub.
+[includeIf "gitdir:~/.dotfiles/"]
+	path = ~/.gitconfig.personal
 ```
+
+### Commit signing on a new machine
+
+Commits are signed with GPG, one key per identity. Signing is switched on in each identity file, not in the shared config, so a machine (or folder) without keys still commits normally.
+
+1. **Get the keys onto the machine.** Find a key's ID with `gpg --list-secret-keys --keyid-format long` (the part after `ed25519/` or `rsa4096/`).
+   - *Reuse an existing key*: on the old machine run `gpg --export-secret-keys --armor <KEY_ID> > key.asc`, move the file over something private (AirDrop, a USB stick; not email or a synced folder), then on the new one run `gpg --import key.asc`, mark it as yours with `gpg --edit-key <KEY_ID>` → `trust` → `5` → `quit`, and delete `key.asc` on both.
+   - *Or create a new one*: `gpg --full-generate-key` (ECC/ed25519, the email of that identity), then add `gpg --armor --export <KEY_ID>` to GitHub under *Settings → SSH and GPG keys → New GPG key*. The email must be a verified email of that GitHub account, or GitHub shows the commit as *Unverified*.
+2. **Run `./install`.** It installs GnuPG and, on macOS, `pinentry-mac`, a passphrase dialog that also works for commits made from editors.
+3. **Point each identity at its key** in its identity file (e.g. `~/.gitconfig.personal`):
+
+   ```gitconfig
+   [user]
+   	email = you@example.com
+   	signingkey = <KEY_ID>
+   [commit]
+   	gpgsign = true
+   ```
+
+4. **Check it** in a repo of that identity (this one, for the personal identity):
+
+   ```bash
+   git commit --allow-empty -m "Test signing"   # asks for the passphrase
+   git log --show-signature -1                  # should say "Good signature"
+   git reset --soft HEAD~1                      # drop the test commit
+   ```
+
+   On macOS, tick *Save in Keychain* in the passphrase dialog so it doesn't ask again.
+
+Key IDs, emails and identity files never go in this repo.
 
 ## Inspiration and resources
 

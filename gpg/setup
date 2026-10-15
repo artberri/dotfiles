@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+#
+# On macOS, make gpg-agent ask for passphrases with pinentry-mac (a dialog,
+# optionally saved in the Keychain) instead of the terminal, so signing works
+# from editors and other apps without a TTY.
+#
+# ~/.gnupg/gpg-agent.conf belongs to the machine (it may hold other agent
+# settings), so only this one line is managed.
+
+set -euo pipefail
+
+[ "$DOTFILES_OS" = macos ] || exit 0
+
+pinentry=
+for prefix in /opt/homebrew /usr/local; do
+	if [ -x "$prefix/bin/pinentry-mac" ]; then
+		pinentry="$prefix/bin/pinentry-mac"
+		break
+	fi
+done
+if [ -z "$pinentry" ]; then
+	echo "  pinentry-mac not found; run ./install without --no-packages" >&2
+	exit 0
+fi
+
+conf="$HOME/.gnupg/gpg-agent.conf"
+if [ -f "$conf" ] && grep -q '^[[:space:]]*pinentry-program' "$conf"; then
+	echo "  gpg-agent already has a pinentry-program"
+	exit 0
+fi
+
+echo "  Adding pinentry-program $pinentry to ~/.gnupg/gpg-agent.conf"
+mkdir -p "$HOME/.gnupg"
+chmod 700 "$HOME/.gnupg"
+if [ -s "$conf" ] && [ -n "$(tail -c 1 "$conf")" ]; then
+	echo >>"$conf"
+fi
+echo "pinentry-program $pinentry" >>"$conf"
+# Restart the agent so it picks the setting up
+gpgconf --kill gpg-agent 2>/dev/null || true

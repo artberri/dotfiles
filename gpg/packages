@@ -1,0 +1,5 @@
+# brew name          options (see ./install)
+gnupg                apt=gnupg cmd=gpg
+# GUI passphrase dialog (with Keychain support), so commits signed from
+# editors work too. Linux desktops already ship a graphical pinentry.
+pinentry-mac         apt=-
