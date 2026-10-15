@@ -53,6 +53,10 @@ Where apt doesn't have it, starship is installed with its [official installer](h
 
 On macOS, `~/Library/Application Support/com.mitchellh.ghostty/config` is loaded after the shared config, so it can hold per-machine overrides.
 
+### Editor defaults
+
+`~/.editorconfig` gives every editor the same defaults for files under `$HOME`: UTF-8, LF, a final newline, no trailing whitespace and **tabs** (spaces for YAML, where tabs aren't allowed). A project's own `.editorconfig` always wins. Projects without one get these settings, and so does Prettier, which reads `.editorconfig` when the project has no Prettier config of its own.
+
 ### bat
 
 `bat` (a `cat` with syntax highlighting) uses the terminal's colours, so it follows the Ghostty theme. It also highlights `man` pages and powers the file preview in fzf's Ctrl-T.

@@ -1,0 +1,4 @@
+# source        target (relative to $HOME)
+# Editors look for .editorconfig from a file's folder upwards, so this one
+# applies to everything under $HOME that has no .editorconfig of its own.
+editorconfig    .editorconfig
