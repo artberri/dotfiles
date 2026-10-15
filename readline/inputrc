@@ -1,0 +1,36 @@
+# Readline config (bash and anything else using readline).
+#
+# ~/.inputrc replaces /etc/inputrc instead of adding to it, so load the
+# distro's defaults first (missing on macOS; readline skips it silently).
+$include /etc/inputrc
+
+# --- Completion ---------------------------------------------------------------
+
+set completion-ignore-case on
+# Treat - and _ as equivalent when completing (needs completion-ignore-case)
+set completion-map-case on
+# List all matches on the first Tab instead of beeping
+set show-all-if-ambiguous on
+# Add a trailing / when completing a symlink to a directory
+set mark-symlinked-directories on
+# Don't duplicate text after the cursor when completing in the middle of a word
+set skip-completed-text on
+# Show file types (/ @ *) and colors in completion lists
+set visible-stats on
+set colored-stats on
+
+# --- History ------------------------------------------------------------------
+
+# Up/Down search history for lines starting with what's already typed.
+# Both the normal and "application mode" arrow sequences.
+"\e[A": history-search-backward
+"\e[B": history-search-forward
+"\eOA": history-search-backward
+"\eOB": history-search-forward
+
+# Shift-Tab cycles through completions
+"\e[Z": menu-complete
+
+# --- Local overrides (not tracked) --------------------------------------------
+
+$include ~/.inputrc.local
