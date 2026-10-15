@@ -2,3 +2,6 @@
 *.local
 
 .DS_Store
+
+# Karabiner keeps its own rolling backups next to its config
+karabiner/config/automatic_backups/

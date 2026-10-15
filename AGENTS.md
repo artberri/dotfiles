@@ -34,10 +34,10 @@ When a task requires choosing a structure or a new tool, propose the options wit
   `packages` format (`#` comments):
 
   ```text
-  <brew name>  [apt=<name>|apt=-]  [cmd=<command>]
+  <brew name>  [apt=<name>|apt=-]  [cmd=<command>]  [os=macos|linux]
   ```
 
-  `apt=` sets the apt name when it differs (`-` = not in apt). `cmd=` skips the package if that command is already on PATH, however it was installed.
+  `apt=` sets the apt name when it differs (`-` = not in apt, with a warning). `cmd=` skips the package if that command is already on PATH, however it was installed. `os=` limits it to one OS, silently (e.g. macOS-only casks).
 
   The optional third column of `links` restricts an entry to one OS. `setup` hooks get `DOTFILES_DIR` and `DOTFILES_OS` (`macos`/`linux`) in the environment. Hooks may change system state (install packages, `chsh`), so never run them while testing unless the user asks; use `./install --no-setup` or `--dry-run`.
 - **Machine-owned rc files are never symlinked.** `~/.bashrc`, `~/.bash_profile`, `~/.gitconfig` and `~/.ssh/config` stay regular files on each machine, because tool installers write to them and those changes must not dirty this repo. Shared config lives in files they load: `~/.extend.bashrc` (sourced from `~/.bashrc`, a line added by `bash/setup`) and `~/.config/git/config` (read by git alongside `~/.gitconfig`, which wins). `~/.ssh/config` includes `~/.ssh/dotfiles.conf` at its **end** (ssh uses the first value it finds, so shared defaults must come last; host entries never go in the repo). Hand-written machine-specific shell config goes in `~/.bashrc.local`, which `extend.bashrc` sources last. Follow the same pattern for new tools: link a file the tool *includes*, not the file installers edit.

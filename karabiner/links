@@ -1,0 +1,5 @@
+# source    target (relative to $HOME)   os
+# The whole folder, not just karabiner.json: Karabiner replaces the file when
+# it saves, which would turn a file link back into a regular file. Changes made
+# in Karabiner's settings show up here as uncommitted changes.
+config      .config/karabiner            macos

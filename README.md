@@ -61,6 +61,12 @@ On macOS, `~/Library/Application Support/com.mitchellh.ghostty/config` is loaded
 
 `bat` (a `cat` with syntax highlighting) uses the terminal's colours, so it follows the Ghostty theme. It also highlights `man` pages and powers the file preview in fzf's Ctrl-T.
 
+### Karabiner (macOS)
+
+[Karabiner-Elements](https://karabiner-elements.pqrs.org) key remaps: terminal-style Ctrl shortcuts on Cmd in Ghostty, Home/End to line start/end, Cmd+arrows to move by word, Hyper (Ctrl+Opt+Cmd+Shift) + letter to open apps, and per-keyboard modifier swaps. The whole `~/.config/karabiner` folder is linked (Karabiner replaces `karabiner.json` when saving, which would break a file link), so changes made in Karabiner's settings show up here as uncommitted changes. Its automatic backups are git-ignored.
+
+Per-keyboard remaps are keyed by keyboard model, so a different Mac's built-in keyboard needs its own entry.
+
 ### Bash everywhere
 
 Bash is the shell on every machine, macOS included. `./install bash` links the shared config to `~/.extend.bashrc` and adds a line to `~/.bashrc` that loads it. On macOS it also makes Homebrew's up-to-date bash your login shell (the system `/bin/bash` is stuck at 3.2) and adds it to `/etc/shells`. It asks for your password for `sudo` and `chsh`.

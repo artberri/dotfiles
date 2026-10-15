@@ -9,11 +9,11 @@
 #
 # An optional `packages` file lists what the tool needs, one per line:
 #
-#   <brew name>  [apt=<name>|apt=-]  [cmd=<command>]
+#   <brew name>  [apt=<name>|apt=-]  [cmd=<command>]  [os=macos|linux]
 #
 # apt= overrides the package name on Debian/Ubuntu (- = not in apt, skip).
 # cmd= skips the package when that command is already on PATH, whoever
-# installed it. Packages are installed with Homebrew on macOS and apt on
+# installed it. os= limits the package to one OS (silently skipped elsewhere). Packages are installed with Homebrew on macOS and apt on
 # Debian/Ubuntu; other distros get a warning.
 #
 # An optional executable `setup` script in the tool directory runs after its
@@ -135,14 +135,15 @@ missing_packages() {
 	local tool="$1" file="$DOTFILES_DIR/$1/packages"
 	[ -f "$file" ] || return 0
 
-	local name rest field apt cmd pkg
+	local name rest field apt cmd os pkg
 	while read -r name rest || [ -n "$name" ]; do
 		case "$name" in '' | '#'*) continue ;; esac
-		apt="$name" cmd=
+		apt="$name" cmd='' os=''
 		for field in $rest; do
 			case "$field" in
 			apt=*) apt="${field#apt=}" ;;
 			cmd=*) cmd="${field#cmd=}" ;;
+			os=*) os="${field#os=}" ;;
 			*)
 				echo "  $tool/packages: unknown field '$field'" >&2
 				return 1
@@ -150,6 +151,9 @@ missing_packages() {
 			esac
 		done
 
+		if [ -n "$os" ] && [ "$os" != "$DOTFILES_OS" ]; then
+			continue
+		fi
 		if [ -n "$cmd" ] && command -v "$cmd" >/dev/null 2>&1; then
 			continue
 		fi
@@ -175,7 +179,8 @@ install_packages() {
 		log "  Install these yourself if you want them (Homebrew names, may differ):"
 		for tool in $tools; do
 			[ -f "$DOTFILES_DIR/$tool/packages" ] || continue
-			log "    $tool: $(grep -vE '^[[:space:]]*(#|$)' "$DOTFILES_DIR/$tool/packages" | awk '{print $1}' | tr '\n' ' ')"
+			pkg="$(grep -vE '^[[:space:]]*(#|$)|os=macos' "$DOTFILES_DIR/$tool/packages" | awk '{print $1}' | tr '\n' ' ' || true)"
+			[ -n "$pkg" ] && log "    $tool: $pkg"
 		done
 		return 0
 	fi
