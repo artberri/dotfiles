@@ -4,6 +4,9 @@
 [user]
 	name = Alberto Varela Sánchez
 	# email is set per machine/directory in ~/.gitconfig
+	# Never guess one from the hostname (user@host.local): refuse to commit
+	# until an email is configured for the repo.
+	useConfigOnly = true
 [init]
 	defaultBranch = main
 [alias]

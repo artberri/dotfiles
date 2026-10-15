@@ -34,6 +34,50 @@ cmd_update() {
 	"$DOTFILES_DIR/install" "$@"
 }
 
+# Prints problems with the git identities and returns how many it found.
+# Never prints emails or key IDs: identities are named by their file.
+check_identity() {
+	local found=0 file files key
+
+	if [ -z "$(git -C "$DOTFILES_DIR" config user.email)" ]; then
+		echo "  no git email for $DOTFILES_DIR: add an includeIf for it to ~/.gitconfig (see README)"
+		found=$((found + 1))
+	fi
+
+	# Every identity file included from ~/.gitconfig, plus ~/.gitconfig itself
+	files="$HOME/.gitconfig
+$(git config --file "$HOME/.gitconfig" --get-regexp '^includeif\..*\.path$' 2>/dev/null | awk '{print $2}' | sort -u)"
+	while IFS= read -r file; do
+		[ -n "$file" ] || continue
+		file="${file/#\~/$HOME}"
+		[ -f "$file" ] || continue
+		[ "$(git config --file "$file" --bool commit.gpgsign 2>/dev/null)" = true ] || continue
+		key="$(git config --file "$file" user.signingkey 2>/dev/null || true)"
+		if [ -z "$key" ]; then
+			echo "  ~/${file#"$HOME"/}: signing is on but user.signingkey isn't set"
+			found=$((found + 1))
+		elif ! command -v gpg >/dev/null 2>&1; then
+			echo "  ~/${file#"$HOME"/}: signing is on but gpg isn't installed (dot install gpg)"
+			found=$((found + 1))
+		elif ! gpg --list-secret-keys --with-colons "$key" 2>/dev/null | grep -qE '^sec:[^erd]'; then
+			echo "  ~/${file#"$HOME"/}: its signing key is missing, expired or revoked in gpg"
+			found=$((found + 1))
+		fi
+	done <<<"$files"
+
+	if [ "$(uname -s)" = Darwin ] && [ "$found" -eq 0 ] &&
+		grep -qs '^[[:space:]]*pinentry-program' "$HOME/.gnupg/gpg-agent.conf"; then
+		local pinentry
+		pinentry="$(awk '/^[[:space:]]*pinentry-program/ {print $2}' "$HOME/.gnupg/gpg-agent.conf")"
+		if [ ! -x "$pinentry" ]; then
+			echo "  gpg-agent's pinentry-program ($pinentry) doesn't exist: dot install gpg"
+			found=$((found + 1))
+		fi
+	fi
+
+	return "$found"
+}
+
 cmd_doctor() {
 	local problems=0 out changes
 
@@ -72,6 +116,9 @@ cmd_doctor() {
 		echo "  ~/.bashrc doesn't load ~/.extend.bashrc: run dot install bash"
 		problems=$((problems + 1))
 	fi
+
+	echo "==> git identity"
+	check_identity || problems=$((problems + $?))
 
 	if [ "$problems" -eq 0 ]; then
 		echo "  all good"

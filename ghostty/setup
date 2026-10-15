@@ -51,7 +51,7 @@ if [ "$DOTFILES_OS" = macos ]; then
 	echo "  brew install --cask $FONT_CASK"
 	brew install --cask "$FONT_CASK"
 elif command -v curl >/dev/null 2>&1 && command -v tar >/dev/null 2>&1 && command -v xz >/dev/null 2>&1; then
-	echo "  Installing '$FONT_FAMILY' into ${FONT_DIR/#"$HOME"/~}"
+	echo "  Installing '$FONT_FAMILY' into ~/${FONT_DIR#"$HOME"/}"
 	mkdir -p "$FONT_DIR"
 	curl -fsSL "$FONT_ARCHIVE" | tar -xJ -C "$FONT_DIR"
 	if command -v fc-cache >/dev/null 2>&1; then

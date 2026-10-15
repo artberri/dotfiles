@@ -51,6 +51,12 @@ for shell in $shells; do
 	fi
 done
 
+# A new machine sets up its git identity after installing (README "New
+# machine"); do the same with a throwaway one so doctor can check the rest.
+if [ -z "$(git config user.email)" ]; then
+	git config --file "$HOME/.gitconfig" user.email ci@example.invalid
+fi
+
 echo "::group::dot doctor"
 if ! dot/dot doctor; then
 	echo "::error::dot doctor reported problems right after installing"
