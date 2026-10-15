@@ -1,3 +1,4 @@
-# source        target (relative to $HOME)
-bash_profile    .bash_profile
-bashrc          .bashrc
+# source         target (relative to $HOME)
+# ~/.bashrc and ~/.bash_profile belong to the machine; setup makes ~/.bashrc
+# load this file.
+extend.bashrc    .extend.bashrc

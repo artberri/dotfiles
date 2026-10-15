@@ -1,3 +1,4 @@
 # source         target (relative to $HOME)
-gitconfig        .gitconfig
+# ~/.gitconfig belongs to the machine and overrides this file.
+gitconfig        .config/git/config
 ignore           .config/git/ignore

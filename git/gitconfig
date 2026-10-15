@@ -1,6 +1,9 @@
+# Shared git config, linked to ~/.config/git/config. Git also reads
+# ~/.gitconfig, which belongs to the machine and takes precedence.
+
 [user]
 	name = Alberto Varela Sánchez
-	# email is set per machine/directory in ~/.gitconfig.local
+	# email is set per machine/directory in ~/.gitconfig
 [init]
 	defaultBranch = main
 [alias]
@@ -36,8 +39,3 @@
 [diff "lockb"]
 	textconv = bun
 	binary = true
-
-# Machine-specific settings (email, includeIf per directory, credentials…).
-# Kept last so it can override anything above. Not tracked.
-[include]
-	path = ~/.gitconfig.local

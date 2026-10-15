@@ -1,4 +1,4 @@
-# Machine-specific and secret overrides, never committed
+# Machine-specific files, never committed
 *.local
 
 .DS_Store

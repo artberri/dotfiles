@@ -11,7 +11,7 @@ My personal configuration files ([@artberri](https://github.com/artberri)), shar
 - **Cross-platform**: the same repo works on macOS and Linux, with OS-specific bits kept clearly separated.
 - **Simple to bootstrap**: a fresh machine should be one clone and one command away from feeling like home.
 - **Idempotent**: running the install again is always safe and only applies what changed.
-- **Safe to publish**: this repo is public, so no secrets, tokens or machine-specific private data live here. Those go in local, git-ignored override files.
+- **Safe to publish**: this repo is public, so no secrets, tokens or machine-specific private data live here. Those stay in each machine's own files (`~/.bashrc.local`, `~/.gitconfig`).
 
 ## Installation
 
@@ -34,7 +34,7 @@ cd ~/.dotfiles
 
 ### Bash everywhere
 
-Bash is the shell on every machine, macOS included. On macOS, `./install bash` installs an up-to-date bash and bash-completion with Homebrew (the system `/bin/bash` is stuck at 3.2), adds it to `/etc/shells` and makes it your login shell. It asks for your password for `sudo` and `chsh`.
+Bash is the shell on every machine, macOS included. `./install bash` links the shared config to `~/.extend.bashrc` and adds a line to `~/.bashrc` that loads it. On macOS it also installs an up-to-date bash and bash-completion with Homebrew (the system `/bin/bash` is stuck at 3.2), adds it to `/etc/shells` and makes it your login shell. It asks for your password for `sudo` and `chsh`.
 
 ## Layout
 
@@ -43,9 +43,10 @@ One folder per tool. Each folder has a `links` file listing what to symlink wher
 ```text
 bash/
   links          # "<source> <target relative to $HOME> [macos|linux]" per line
-  bash_profile
-  bashrc
+  extend.bashrc
   setup          # optional
+git/
+  ...
 install
 ```
 
@@ -57,14 +58,20 @@ git pull
 ./install
 ```
 
-## Local overrides
+## Machine-specific config
 
-Anything personal, secret or specific to a single machine (work email for git, API tokens, host aliases…) belongs in local files that are **not** tracked by git, for example:
+Some files belong to each machine and are **never** symlinked: `~/.bashrc`, `~/.bash_profile` and `~/.gitconfig`. Tool installers (nvm, bun, gcloud, `gh auth setup-git`…) love to append to them, and those changes shouldn't end up as noise in this repo. Anything personal, secret or specific to one machine goes there too.
 
-- `~/.gitconfig.local`
-- `~/.bashrc.local` / `~/.zshrc.local`
+The shared config is loaded alongside them instead:
 
-The tracked configs source these files when they exist. For example, a `~/.gitconfig.local` that sets a different email per directory:
+| Shared (this repo) | Machine-owned | How it's loaded |
+|---|---|---|
+| `~/.extend.bashrc` | `~/.bashrc` | `./install bash` appends a line to `~/.bashrc` that sources it |
+| `~/.config/git/config` | `~/.gitconfig` | Git reads both; `~/.gitconfig` wins |
+
+Your own hand-written, machine-specific shell config (aliases, work shortcuts, completions) goes in **`~/.bashrc.local`**. `~/.extend.bashrc` loads it at the end, so it can override anything shared. It is never committed, and unlike `~/.bashrc` no installer writes to it.
+
+For example, a `~/.gitconfig` that sets a different email per directory:
 
 ```gitconfig
 [includeIf "gitdir:~/work/"]

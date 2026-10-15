@@ -1,9 +1,36 @@
 #!/usr/bin/env bash
 #
-# Make an up-to-date bash the login shell. On macOS that means Homebrew's
-# bash, since /bin/bash is stuck at 3.2.
+# - Make ~/.bashrc load ~/.extend.bashrc (and ~/.bash_profile load ~/.bashrc).
+# - Make an up-to-date bash the login shell. On macOS that means Homebrew's
+#   bash, since /bin/bash is stuck at 3.2.
+#
+# ~/.bashrc and ~/.bash_profile stay regular files owned by the machine, so
+# tool installers can append to them without touching this repo.
 
 set -euo pipefail
+
+# Append a line to a file unless a line containing `marker` is already there.
+ensure_line() {
+	local file="$1" marker="$2" line="$3"
+	if [ -f "$file" ] && grep -qF "$marker" "$file"; then
+		return
+	fi
+	echo "  Adding to ~/${file#"$HOME"/}: $line"
+	if [ -s "$file" ] && [ -n "$(tail -c 1 "$file")" ]; then
+		echo >>"$file"
+	fi
+	printf '\n%s\n' "$line" >>"$file"
+}
+
+ensure_line "$HOME/.bashrc" ".extend.bashrc" \
+	'[ -f "$HOME/.extend.bashrc" ] && . "$HOME/.extend.bashrc"'
+# Login shells (macOS terminals, SSH) read ~/.bash_profile, not ~/.bashrc.
+# On Linux, don't create one if missing: it would shadow the distro's
+# ~/.profile, which already loads ~/.bashrc.
+if [ -f "$HOME/.bash_profile" ] || [ "$DOTFILES_OS" = macos ]; then
+	ensure_line "$HOME/.bash_profile" "/.bashrc" \
+		'[ -f "$HOME/.bashrc" ] && . "$HOME/.bashrc"'
+fi
 
 if [ "$DOTFILES_OS" = macos ]; then
 	if ! command -v brew >/dev/null 2>&1; then
