@@ -25,7 +25,7 @@ echo "::endgroup::"
 
 # Lines install and the setup hooks print only when they change something
 changes="$(printf '%s\n' "$second" |
-	grep -E '^  (link|backup|install|Adding|Creating|Installing|Linking|Changing|brew install) ' || true)"
+	grep -E '^  (link|backup|install|Adding|Creating|Installing|Linking|Changing|Setting|brew install) ' || true)"
 if [ -n "$changes" ]; then
 	echo "::error::Second run changed something:"
 	printf '%s\n' "$changes"

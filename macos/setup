@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+#
+# Apply the settings listed in macos/defaults. Only writes what differs, so
+# re-runs change nothing, and restarts the Dock/Finder only when needed.
+
+set -euo pipefail
+
+[ "$DOTFILES_OS" = macos ] || exit 0
+
+restart=""
+changed=0
+
+while read -r domain key type value || [ -n "$domain" ]; do
+	case "$domain" in '' | '#'*) continue ;; esac
+	case "$value" in \~/*) value="$HOME/${value#\~/}" ;; esac
+
+	# How `defaults read` prints the value we want
+	case "$type" in
+	bool) [ "$value" = true ] && expected=1 || expected=0 ;;
+	*) expected="$value" ;;
+	esac
+
+	current="$(defaults read "$domain" "$key" 2>/dev/null || true)"
+	[ "$current" = "$expected" ] && continue
+
+	echo "  Setting $domain $key = $value"
+	if [ "$domain" = com.apple.screencapture ] && [ "$key" = location ]; then
+		mkdir -p "$value"
+	fi
+	defaults write "$domain" "$key" "-$type" "$value"
+	changed=$((changed + 1))
+	case "$domain" in
+	com.apple.dock) restart="$restart Dock" ;;
+	com.apple.finder) restart="$restart Finder" ;;
+	com.apple.screencapture) restart="$restart SystemUIServer" ;;
+	esac
+done <"$DOTFILES_DIR/macos/defaults"
+
+for app in $(printf '%s\n' $restart | sort -u); do
+	killall "$app" 2>/dev/null || true
+done
+
+if [ "$changed" -gt 0 ]; then
+	echo "  Some settings (key repeat, appearance) fully apply after logging out and in"
+else
+	echo "  macOS settings already applied"
+fi

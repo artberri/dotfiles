@@ -15,7 +15,7 @@ When a task requires choosing a structure or a new tool, propose the options wit
   - must only need what ships with a stock macOS or Linux install (Bash 3.2-compatible, POSIX utilities);
   - handles OS differences itself (see below);
   - moves any existing target it replaces to `~/.dotfiles-backup/<timestamp>/<path relative to $HOME>` (never next to the original, where tools reading a whole folder would pick it up), and is safe to re-run.
-- **Repo layout: one folder per tool.** A top-level folder is a tool when it contains a `links` and/or a `packages` file (`cli/` has only `packages`: tools without config):
+- **Repo layout: one folder per tool.** A top-level folder is a tool when it contains a `links` file, a `packages` file and/or an executable `setup` (`cli/` has only `packages`; `macos/` only `setup` plus its `defaults` list):
 
   ```text
   bash/
@@ -87,7 +87,7 @@ When a task requires choosing a structure or a new tool, propose the options wit
 
 - This repo lives in `~/.dotfiles`. Before committing, check `git config user.email` is the personal identity (not a made-up `user@host.local`); never commit with `-q`, which hides git's warning about guessed identities.
 
-- CI (`.github/workflows/ci.yml`) must stay green: it runs `./install` twice on every supported platform and fails on any change in the second run or any error while loading the shell config. When adding output to `install` or a `setup` hook that signals a change, start the line with one of the verbs `test/install-twice.sh` looks for (`link`, `backup`, `install`, `Adding`, `Creating`, `Installing`, `Linking`, `Changing`, `brew install`).
+- CI (`.github/workflows/ci.yml`) must stay green: it runs `./install` twice on every supported platform and fails on any change in the second run or any error while loading the shell config. When adding output to `install` or a `setup` hook that signals a change, start the line with one of the verbs `test/install-twice.sh` looks for (`link`, `backup`, `install`, `Adding`, `Creating`, `Installing`, `Linking`, `Changing`, `Setting`, `brew install`).
 
 - Keep changes small and focused; one topic per commit.
 - Update `README.md` when installation steps, requirements or layout change, and update this file when a convention is decided.

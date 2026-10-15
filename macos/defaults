@@ -1,0 +1,39 @@
+# macOS settings applied by macos/setup on every ./install (macOS only).
+#
+# <domain>                   <key>                                   <type>   <value>
+# Types: bool, int, float, string. A leading ~/ in a value means $HOME.
+# Only settings that differ are written; Dock/Finder restart only if theirs did.
+
+# Keyboard: faster repeat than System Settings allows (lower = faster)
+NSGlobalDomain               KeyRepeat                               int      2
+NSGlobalDomain               InitialKeyRepeat                        int      30
+
+# Typing: no auto-correct, smart quotes or smart dashes (they break code)
+NSGlobalDomain               NSAutomaticSpellingCorrectionEnabled    bool     false
+NSGlobalDomain               NSAutomaticQuoteSubstitutionEnabled     bool     false
+NSGlobalDomain               NSAutomaticDashSubstitutionEnabled      bool     false
+
+# Appearance and scrolling
+NSGlobalDomain               AppleInterfaceStyle                     string   Dark
+NSGlobalDomain               com.apple.swipescrolldirection          bool     false
+
+# Dock: auto-hide, large icons, no "recent apps" section
+com.apple.dock               autohide                                bool     true
+com.apple.dock               tilesize                                int      72
+com.apple.dock               show-recents                            bool     false
+
+# Finder: path bar, no status bar, icon view, new windows open Recents,
+# always show file extensions
+com.apple.finder             ShowPathbar                             bool     true
+com.apple.finder             ShowStatusBar                           bool     false
+com.apple.finder             FXPreferredViewStyle                    string   icnv
+com.apple.finder             NewWindowTarget                         string   PfAF
+NSGlobalDomain               AppleShowAllExtensions                  bool     true
+
+# No .DS_Store files on network shares and USB drives
+com.apple.desktopservices    DSDontWriteNetworkStores                bool     true
+com.apple.desktopservices    DSDontWriteUSBStores                    bool     true
+
+# Screenshots: PNG files in ~/Screenshots instead of the Desktop
+com.apple.screencapture      location                                string   ~/Screenshots
+com.apple.screencapture      type                                    string   png

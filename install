@@ -2,7 +2,8 @@
 #
 # Install packages, symlink dotfiles into $HOME and run per-tool setup hooks.
 #
-# Each top-level directory with a `links` and/or `packages` file is a "tool".
+# Each top-level directory with a `links` file, a `packages` file and/or an
+# executable `setup` script is a "tool".
 # Every line in `links` is:
 #
 #   <source relative to tool dir>  <target relative to $HOME>  [macos|linux]
@@ -251,7 +252,7 @@ install_packages() {
 }
 
 is_tool() {
-	[ -f "$1/links" ] || [ -f "$1/packages" ]
+	[ -f "$1/links" ] || [ -f "$1/packages" ] || [ -x "$1/setup" ]
 }
 
 # Remove a link created by link_file and put back the most recent backup of
@@ -353,7 +354,7 @@ main() {
 	local tool
 	for tool in "${tools[@]}"; do
 		if ! is_tool "$DOTFILES_DIR/$tool"; then
-			echo "Unknown tool: $tool (no $tool/links or $tool/packages file)" >&2
+			echo "Unknown tool: $tool (no $tool/links, $tool/packages or $tool/setup)" >&2
 			exit 1
 		fi
 	done
