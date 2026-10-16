@@ -261,6 +261,24 @@ fi
 # zoxide hooks into PROMPT_COMMAND, so initialise it after starship
 command -v zoxide >/dev/null 2>&1 && eval "$(zoxide init bash)"
 
+# --- Claude Code -------------------------------------------------------------
+
+# No "Co-Authored-By: Claude" / "Generated with Claude Code" lines in repos
+# under the folders listed in CLAUDE_NO_ATTRIBUTION_DIRS (colon-separated,
+# set per machine in ~/.bashrc.local). Only applies when started from a shell.
+claude() {
+	local dir IFS=:
+	for dir in ${CLAUDE_NO_ATTRIBUTION_DIRS:-}; do
+		case "$PWD/" in
+		"${dir%/}/"*)
+			command claude --settings '{"attribution":{"commit":"","pr":""}}' "$@"
+			return
+			;;
+		esac
+	done
+	command claude "$@"
+}
+
 # --- Local overrides ---------------------------------------------------------
 
 # Hand-written, machine-specific config (aliases, work shortcuts…). Never

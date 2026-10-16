@@ -36,7 +36,7 @@ The whole setup, in order. Steps 1–4 get the files in place; the rest are the 
 
 5. **Git identities.** Add `includeIf` blocks to `~/.gitconfig`, one per identity, and one for `~/.dotfiles` itself ([example](#machine-specific-config)). Until a repo has an email, git refuses to commit there (`user.useConfigOnly`) rather than making one up from the hostname.
 6. **Commit signing**: import or create the GPG keys and point each identity at its key ([steps](#commit-signing-on-a-new-machine)).
-7. **Machine-specific shell config** (work aliases, tool paths…) goes in `~/.bashrc.local`; extra SSH hosts in `~/.ssh/config`.
+7. **Machine-specific shell config** (work aliases, tool paths, `CLAUDE_NO_ATTRIBUTION_DIRS`…) goes in `~/.bashrc.local`; extra SSH hosts in `~/.ssh/config`.
 8. **macOS only:** open Karabiner-Elements once and allow what it asks for (driver, input monitoring), or the remaps won't apply. Log out and in once so all [macOS settings](#macos-settings) apply.
 9. **Check:** `dot doctor` should say *all good*. It checks links, packages, the repo's sync with GitHub, and that every identity has an email and a usable signing key.
 
@@ -98,6 +98,15 @@ Per-keyboard remaps are keyed by keyboard model, so a different Mac's built-in k
 `macos/defaults` lists the system settings every Mac gets: fast key repeat, no auto-correct or smart quotes and dashes, dark mode without natural scrolling, an auto-hiding Dock, Finder with path bar and file extensions, no `.DS_Store` files on network or USB drives, and PNG screenshots in `~/Screenshots`. `./install` writes only the ones that differ and restarts the Dock or Finder only when theirs changed. Key repeat and appearance fully apply after logging out and in.
 
 To change a setting, edit `macos/defaults` (not System Settings, or the next `./install` puts it back).
+
+### Claude Code
+
+**No co-author lines in personal repos.** Claude adds `Co-Authored-By: Claude` to commits and a "Generated with Claude Code" line to PRs by default. It's switched off:
+
+- for this repo, by its committed `.claude/settings.json`, which works however Claude is started;
+- for every repo under the folders in `CLAUDE_NO_ATTRIBUTION_DIRS` (colon-separated, set in `~/.bashrc.local`, e.g. `export CLAUDE_NO_ATTRIBUTION_DIRS="$HOME/personal:$HOME/.dotfiles"`), by a `claude` shell function that adds the setting when started from a terminal inside them. Repos elsewhere keep the default.
+
+For a single repo, add `{"attribution": {"commit": "", "pr": ""}}` to its `.claude/settings.local.json` (git-ignored globally).
 
 ### Bash everywhere
 
