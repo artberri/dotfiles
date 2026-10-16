@@ -1,0 +1,7 @@
+# source                  target (relative to $HOME)
+# Hand-written files only. ~/.claude/settings.json belongs to the machine
+# (secrets in env, work plugins, and Claude rewrites it via /config, /model);
+# claude/setup merges the shared preferences from claude/settings.json into it.
+CLAUDE.md                 .claude/CLAUDE.md
+statusline-command.sh     .claude/statusline-command.sh
+commands/history.md       .claude/commands/history.md

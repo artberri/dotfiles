@@ -101,6 +101,12 @@ To change a setting, edit `macos/defaults` (not System Settings, or the next `./
 
 ### Claude Code
 
+`claude/` keeps [Claude Code](https://code.claude.com) the same on every machine, without publishing anything private:
+
+- **Linked:** `~/.claude/CLAUDE.md` (personal standing instructions for every project), the status line script and the `/history` command.
+- **Merged:** `~/.claude/settings.json` stays the machine's file (it holds `env` values and work plugins, and `/config` and `/model` rewrite it). `./install` merges only the shared preferences from `claude/settings.json` into it (status line, full-screen mode, voice, official plugins), key by key, and only when something differs.
+- **Never in the repo:** `~/.claude.json`, history, transcripts and anything else under `~/.claude`.
+
 **No co-author lines in personal repos.** Claude adds `Co-Authored-By: Claude` to commits and a "Generated with Claude Code" line to PRs by default. It's switched off:
 
 - for this repo, by its committed `.claude/settings.json`, which works however Claude is started;

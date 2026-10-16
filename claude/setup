@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+#
+# Merge the shared Claude Code preferences (claude/settings.json) into the
+# machine's ~/.claude/settings.json. Objects are merged key by key, so
+# anything else in the file (env, other plugins, /config changes) stays.
+# Writes only when something differs.
+
+set -euo pipefail
+
+shared="$DOTFILES_DIR/claude/settings.json"
+target="$HOME/.claude/settings.json"
+
+if ! command -v jq >/dev/null 2>&1; then
+	echo "  jq not found; skipping the Claude Code settings merge" >&2
+	exit 0
+fi
+
+current='{}'
+if [ -s "$target" ]; then
+	if ! current="$(jq -c . "$target" 2>/dev/null)"; then
+		echo "  ~/.claude/settings.json isn't valid JSON; left untouched" >&2
+		exit 0
+	fi
+fi
+
+merged="$(jq -c --argjson cur "$current" '$cur * .' "$shared")"
+if [ "$(jq -c -S . <<<"$merged")" = "$(jq -c -S . <<<"$current")" ]; then
+	echo "  Claude Code settings already include the shared preferences"
+	exit 0
+fi
+
+echo "  Setting shared preferences in ~/.claude/settings.json"
+mkdir -p "$HOME/.claude"
+tmp="$(mktemp "$HOME/.claude/settings.json.XXXXXX")"
+jq . <<<"$merged" >"$tmp"
+mv "$tmp" "$target"
