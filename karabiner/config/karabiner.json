@@ -10,7 +10,8 @@
                                 "conditions": [
                                     {
                                         "bundle_identifiers": [
-                                            "^com\\.mitchellh\\.ghostty$"
+                                            "^com\\.mitchellh\\.ghostty$",
+                                            "^com\\.cmuxterm\\.app$"
                                         ],
                                         "type": "frontmost_application_if"
                                     }
@@ -37,7 +38,8 @@
                                 "conditions": [
                                     {
                                         "bundle_identifiers": [
-                                            "^com\\.mitchellh\\.ghostty$"
+                                            "^com\\.mitchellh\\.ghostty$",
+                                            "^com\\.cmuxterm\\.app$"
                                         ],
                                         "type": "frontmost_application_if"
                                     }
