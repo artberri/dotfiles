@@ -28,7 +28,7 @@ The whole setup, in order. Steps 1–4 get the files in place; the rest are the 
    git clone git@github.com:artberri/dotfiles.git ~/.dotfiles
    ```
 
-4. **Install**, then open a new terminal (Ghostty, on macOS):
+4. **Install**, then open a new terminal (cmux, on macOS):
 
    ```bash
    ~/.dotfiles/install
@@ -75,15 +75,13 @@ Where apt doesn't have it, starship is installed with its [official installer](h
 
 ### Ghostty
 
-[Ghostty](https://ghostty.org) is the terminal on every machine. `./install ghostty` installs it (Homebrew cask on macOS, apt on Ubuntu 26.04+), links its config and theme into `~/.config/ghostty/`, and installs FiraCode Nerd Font if no installed font provides it (Homebrew cask on macOS, the official [Nerd Fonts](https://www.nerdfonts.com) release into `~/.local/share/fonts` on Linux).
+[Ghostty](https://ghostty.org) is the terminal on Linux, and its config also drives cmux on macOS. `./install ghostty` installs it (Homebrew cask on macOS, apt on Ubuntu 26.04+), links its config and theme into `~/.config/ghostty/`, and installs FiraCode Nerd Font if no installed font provides it (Homebrew cask on macOS, the official [Nerd Fonts](https://www.nerdfonts.com) release into `~/.local/share/fonts` on Linux).
 
 On macOS, `~/Library/Application Support/com.mitchellh.ghostty/config` is loaded after the shared config, so it can hold per-machine overrides.
 
-On macOS I use [cmux](https://www.cmux.dev) as my terminal instead of Ghostty. cmux reads Ghostty's config, so the settings and theme here apply to it too.
-
 ### cmux (macOS)
 
-`./install cmux` installs [cmux](https://www.cmux.dev) (Homebrew cask) and links `cmux/cmux.json` to `~/.config/cmux/cmux.json`. Settings in that file override the ones in cmux's Settings window, which stay on the machine. Terminal settings (font, theme, keybinds) come from the Ghostty config above.
+On macOS I use [cmux](https://www.cmux.dev) as my terminal instead of Ghostty. `./install cmux` installs it (Homebrew cask) and links `cmux/cmux.json` to `~/.config/cmux/cmux.json`. Settings in that file override the ones in cmux's Settings window, which stay on the machine. Terminal settings (font, theme, keybinds) come from the Ghostty config above.
 
 To open cmux from anywhere, give it a hotkey in [Raycast](https://www.raycast.com): Settings → Extensions → Applications → cmux → Hotkey, set to Hyper+F. Raycast keeps this in its own settings, not in this repo, so set it again on each new Mac.
 
