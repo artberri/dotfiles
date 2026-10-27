@@ -1,0 +1,7 @@
+{
+	"$schema": "https://raw.githubusercontent.com/manaflow-ai/cmux/main/web/data/cmux.schema.json",
+	"schemaVersion": 1
+
+	// Settings saved here override the ones in the cmux app's Settings window.
+	// The full list, with defaults, is in the schema above.
+}

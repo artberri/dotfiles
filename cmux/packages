@@ -1,0 +1,4 @@
+# brew name    options (see ./install)
+# cmd= because the app puts its CLI on PATH, so a copy installed outside
+# Homebrew isn't reinstalled.
+cmux           cmd=cmux os=macos

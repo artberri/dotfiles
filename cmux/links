@@ -1,0 +1,4 @@
+# source     target (relative to $HOME)    os
+# cmux only reads this file (it writes the template when it's missing), so it
+# can be linked directly. It also reads Ghostty's config (see ghostty/).
+cmux.json    .config/cmux/cmux.json        macos
