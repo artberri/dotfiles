@@ -1,7 +1,23 @@
 {
 	"$schema": "https://raw.githubusercontent.com/manaflow-ai/cmux/main/web/data/cmux.schema.json",
-	"schemaVersion": 1
+	"schemaVersion": 1,
 
 	// Settings saved here override the ones in the cmux app's Settings window.
 	// The full list, with defaults, is in the schema above.
+
+	"shortcuts": {
+		"bindings": {
+			// cmd+i / cmd+k walk the workspace sidebar up and down.
+			"prevSidebarTab": "cmd+i",
+			"nextSidebarTab": "cmd+k",
+			// cmd+i was "Show notifications".
+			"showNotifications": "ctrl+cmd+i",
+
+			// cmd+u / cmd+o move between tabs in the focused pane.
+			"prevSurface": "cmd+u",
+			"nextSurface": "cmd+o",
+			// cmd+o was "Open folder".
+			"openFolder": "opt+cmd+o"
+		}
+	}
 }
