@@ -85,6 +85,8 @@ On macOS I use [cmux](https://www.cmux.dev) as my terminal instead of Ghostty. c
 
 `./install cmux` installs [cmux](https://www.cmux.dev) (Homebrew cask) and links `cmux/cmux.json` to `~/.config/cmux/cmux.json`. Settings in that file override the ones in cmux's Settings window, which stay on the machine. Terminal settings (font, theme, keybinds) come from the Ghostty config above.
 
+To open cmux from anywhere, give it a hotkey in [Raycast](https://www.raycast.com): Settings → Extensions → Applications → cmux → Hotkey, set to Hyper+F. Raycast keeps this in its own settings, not in this repo, so set it again on each new Mac.
+
 ### Editor defaults
 
 `~/.editorconfig` gives every editor the same defaults for files under `$HOME`: UTF-8, LF, a final newline, no trailing whitespace and **tabs** (spaces for YAML, where tabs aren't allowed). A project's own `.editorconfig` always wins. Projects without one get these settings, and so does Prettier, which reads `.editorconfig` when the project has no Prettier config of its own.
