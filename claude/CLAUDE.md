@@ -32,6 +32,7 @@ AGENTS.md wins where they disagree.
 - Before committing in a repo, check `git config user.email` is the identity
   that repo should use.
 - Small, focused commits: one topic each.
+- To commit, use the `commit` skill when it's available.
 
 ## Public repositories
 
