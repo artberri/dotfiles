@@ -279,6 +279,11 @@ claude() {
 	command claude "$@"
 }
 
+# cc: Claude Code with code mode. ccc: the same with the personal account,
+# whose config (login, settings, history) lives in ~/.claude-personal.
+alias cc='CLAUDE_CODE_EXPERIMENTAL_CODE_MODE=1 claude'
+alias ccc='CLAUDE_CODE_EXPERIMENTAL_CODE_MODE=1 CLAUDE_CONFIG_DIR="$HOME/.claude-personal" claude'
+
 # --- Local overrides ---------------------------------------------------------
 
 # Hand-written, machine-specific config (aliases, work shortcuts…). Never
