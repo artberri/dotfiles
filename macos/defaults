@@ -7,6 +7,8 @@
 # Keyboard: faster repeat than System Settings allows (lower = faster)
 NSGlobalDomain               KeyRepeat                               int      2
 NSGlobalDomain               InitialKeyRepeat                        int      30
+# Holding a key repeats it instead of showing the accent picker
+NSGlobalDomain               ApplePressAndHoldEnabled                bool     false
 
 # Typing: no auto-correct, smart quotes or smart dashes (they break code)
 NSGlobalDomain               NSAutomaticSpellingCorrectionEnabled    bool     false
@@ -16,6 +18,10 @@ NSGlobalDomain               NSAutomaticDashSubstitutionEnabled      bool     fa
 # Appearance and scrolling
 NSGlobalDomain               AppleInterfaceStyle                     string   Dark
 NSGlobalDomain               com.apple.swipescrolldirection          bool     false
+
+# Trackpad: tap to click (built-in and Bluetooth trackpads)
+com.apple.AppleMultitouchTrackpad                   Clicking         bool     true
+com.apple.driver.AppleBluetoothMultitouch.trackpad  Clicking         bool     true
 
 # Dock: auto-hide, large icons, no "recent apps" section
 com.apple.dock               autohide                                bool     true
@@ -37,3 +43,5 @@ com.apple.desktopservices    DSDontWriteUSBStores                    bool     tr
 # Screenshots: PNG files in ~/Screenshots instead of the Desktop
 com.apple.screencapture      location                                string   ~/Screenshots
 com.apple.screencapture      type                                    string   png
+# No shadow around window screenshots
+com.apple.screencapture      disable-shadow                          bool     true

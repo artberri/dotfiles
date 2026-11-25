@@ -41,7 +41,7 @@ for app in $(printf '%s\n' $restart | sort -u); do
 done
 
 if [ "$changed" -gt 0 ]; then
-	echo "  Some settings (key repeat, appearance) fully apply after logging out and in"
+	echo "  Some settings (key repeat, appearance, trackpad) fully apply after logging out and in"
 else
 	echo "  macOS settings already applied"
 fi

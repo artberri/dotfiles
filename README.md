@@ -114,7 +114,7 @@ Per-keyboard remaps are keyed by keyboard model, so a different Mac's built-in k
 
 ### macOS settings
 
-`macos/defaults` lists the system settings every Mac gets: fast key repeat, no auto-correct or smart quotes and dashes, dark mode without natural scrolling, an auto-hiding Dock, Finder with path bar and file extensions, no `.DS_Store` files on network or USB drives, and PNG screenshots in `~/Screenshots`. `./install` writes only the ones that differ and restarts the Dock or Finder only when theirs changed. Key repeat and appearance fully apply after logging out and in.
+`macos/defaults` lists the system settings every Mac gets: fast key repeat (no accent picker on hold), no auto-correct or smart quotes and dashes, dark mode without natural scrolling, tap to click, an auto-hiding Dock, Finder with path bar and file extensions, no `.DS_Store` files on network or USB drives, and PNG screenshots without window shadows in `~/Screenshots`. `./install` writes only the ones that differ and restarts the Dock or Finder only when theirs changed. Key repeat, appearance and the trackpad fully apply after logging out and in.
 
 To change a setting, edit `macos/defaults` (not System Settings, or the next `./install` puts it back).
 
