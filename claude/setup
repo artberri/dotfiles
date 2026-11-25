@@ -1,36 +1,46 @@
 #!/usr/bin/env bash
 #
 # Merge the shared Claude Code preferences (claude/settings.json) into the
-# machine's ~/.claude/settings.json. Objects are merged key by key, so
-# anything else in the file (env, other plugins, /config changes) stays.
-# Writes only when something differs.
+# settings.json of both config folders: ~/.claude (the default account) and
+# ~/.claude-personal (the personal account, used by the `ccc` alias).
+# Objects are merged key by key, so anything else in the files (env, other
+# plugins, /config changes) stays. Writes only when something differs.
 
 set -euo pipefail
 
 shared="$DOTFILES_DIR/claude/settings.json"
-target="$HOME/.claude/settings.json"
 
 if ! command -v jq >/dev/null 2>&1; then
 	echo "  jq not found; skipping the Claude Code settings merge" >&2
 	exit 0
 fi
 
-current='{}'
-if [ -s "$target" ]; then
-	if ! current="$(jq -c . "$target" 2>/dev/null)"; then
-		echo "  ~/.claude/settings.json isn't valid JSON; left untouched" >&2
-		exit 0
+merge_settings() {
+	local dir="$1"
+	local target="$dir/settings.json" name="${dir#"$HOME"/}/settings.json"
+
+	local current='{}'
+	if [ -s "$target" ]; then
+		if ! current="$(jq -c . "$target" 2>/dev/null)"; then
+			echo "  ~/$name isn't valid JSON; left untouched" >&2
+			return 0
+		fi
 	fi
-fi
 
-merged="$(jq -c --argjson cur "$current" '$cur * .' "$shared")"
-if [ "$(jq -c -S . <<<"$merged")" = "$(jq -c -S . <<<"$current")" ]; then
-	echo "  Claude Code settings already include the shared preferences"
-	exit 0
-fi
+	local merged
+	merged="$(jq -c --argjson cur "$current" '$cur * .' "$shared")"
+	if [ "$(jq -c -S . <<<"$merged")" = "$(jq -c -S . <<<"$current")" ]; then
+		echo "  ~/$name already includes the shared preferences"
+		return 0
+	fi
 
-echo "  Setting shared preferences in ~/.claude/settings.json"
-mkdir -p "$HOME/.claude"
-tmp="$(mktemp "$HOME/.claude/settings.json.XXXXXX")"
-jq . <<<"$merged" >"$tmp"
-mv "$tmp" "$target"
+	echo "  Setting shared preferences in ~/$name"
+	mkdir -p "$dir"
+	local tmp
+	tmp="$(mktemp "$dir/settings.json.XXXXXX")"
+	jq . <<<"$merged" >"$tmp"
+	mv "$tmp" "$target"
+}
+
+merge_settings "$HOME/.claude"
+merge_settings "$HOME/.claude-personal"

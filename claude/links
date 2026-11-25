@@ -1,6 +1,13 @@
 # source                  target (relative to $HOME)
-# Hand-written files only. ~/.claude/settings.json belongs to the machine
-# (secrets in env, work plugins, and Claude rewrites it via /config, /model);
-# claude/setup merges the shared preferences from claude/settings.json into it.
+# Hand-written files only, linked into both Claude Code config folders:
+# ~/.claude (the default account) and ~/.claude-personal (the personal
+# account, used by the `ccc` alias). Each folder's settings.json belongs to
+# the machine (secrets in env, work plugins, and Claude rewrites it via
+# /config, /model); claude/setup merges the shared preferences from
+# claude/settings.json into both.
 CLAUDE.md                 .claude/CLAUDE.md
+keybindings.json          .claude/keybindings.json
 commands/history.md       .claude/commands/history.md
+CLAUDE.md                 .claude-personal/CLAUDE.md
+keybindings.json          .claude-personal/keybindings.json
+commands/history.md       .claude-personal/commands/history.md

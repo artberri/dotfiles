@@ -109,9 +109,10 @@ To change a setting, edit `macos/defaults` (not System Settings, or the next `./
 
 `claude/` keeps [Claude Code](https://code.claude.com) the same on every machine, without publishing anything private:
 
-- **Linked:** `~/.claude/CLAUDE.md` (personal standing instructions for every project) and the `/history` command.
-- **Merged:** `~/.claude/settings.json` stays the machine's file (it holds `env` values and work plugins, and `/config` and `/model` rewrite it). `./install` merges only the shared preferences from `claude/settings.json` into it (full-screen mode, voice, official plugins), key by key, and only when something differs.
-- **Never in the repo:** `~/.claude.json`, history, transcripts and anything else under `~/.claude`.
+- **Two accounts:** `cc` starts Claude Code with the default config folder, `~/.claude` (e.g. a work account). `ccc` starts it with `~/.claude-personal` (through `CLAUDE_CONFIG_DIR`), a separate login with its own settings, history and plugins. `./install` creates `~/.claude-personal`; run `ccc` once and `/login` with the personal account. Both get everything below.
+- **Linked:** `CLAUDE.md` (personal standing instructions for every project), `keybindings.json` and the `/history` command.
+- **Merged:** each folder's `settings.json` stays the machine's file (it holds `env` values and work plugins, and `/config` and `/model` rewrite it). `./install` merges only the shared preferences from `claude/settings.json` into it (full-screen mode, voice with hold-to-talk on Space, official plugins), key by key, and only when something differs.
+- **Never in the repo:** `.claude.json`, history, transcripts and anything else in those folders.
 
 **No co-author lines in personal repos.** Claude adds `Co-Authored-By: Claude` to commits and a "Generated with Claude Code" line to PRs by default. It's switched off:
 
