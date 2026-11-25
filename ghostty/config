@@ -25,3 +25,4 @@ keybind = super+u=previous_tab
 keybind = super+o=next_tab
 keybind = super+enter=toggle_split_zoom
 keybind = super+.=clear_screen
+keybind = super+shift+c=copy_to_clipboard
