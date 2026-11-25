@@ -83,7 +83,20 @@ On macOS, `~/Library/Application Support/com.mitchellh.ghostty/config` is loaded
 
 On macOS I use [cmux](https://www.cmux.dev) as my terminal instead of Ghostty. `./install cmux` installs it (Homebrew cask) and links `cmux/cmux.json` to `~/.config/cmux/cmux.json`. Settings in that file override the ones in cmux's Settings window, which stay on the machine. Terminal settings (font, theme, keybinds) come from the Ghostty config above.
 
-To open cmux from anywhere, give it a hotkey in [Raycast](https://www.raycast.com): Settings → Extensions → Applications → cmux → Hotkey, set to Hyper+F. Raycast keeps this in its own settings, not in this repo, so set it again on each new Mac.
+To open cmux from anywhere, give it a [Raycast](#raycast-macos) hotkey: Hyper+F.
+
+### Raycast (macOS)
+
+[Raycast](https://www.raycast.com) opens apps with hotkeys. It keeps them in its own settings, not in this repo, so set them again on each new Mac in Settings → Shortcuts → Hotkey column of the app (Hyper is Ctrl+Opt+Cmd+Shift, shown as ✦):
+
+| Hotkey | App |
+|---|---|
+| Hyper+D | Zen |
+| Hyper+F | cmux |
+| Hyper+G | Cursor |
+| Hyper+S | Slack |
+
+Karabiner's own Hyper+letter app shortcuts are in `karabiner/config/assets/complex_modifications/artberri.json`.
 
 ### Editor defaults
 
