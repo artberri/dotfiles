@@ -45,3 +45,14 @@ if [ "$changed" -gt 0 ]; then
 else
 	echo "  macOS settings already applied"
 fi
+
+# Touch ID for sudo. /etc/pam.d/sudo_local (macOS 14+) survives OS updates,
+# unlike /etc/pam.d/sudo. Without Touch ID (SSH, lid closed) sudo asks for the
+# password as before.
+sudo_local=/etc/pam.d/sudo_local
+if ! grep -q sudo_local /etc/pam.d/sudo 2>/dev/null; then
+	echo "  Touch ID for sudo skipped: needs macOS 14 or later" >&2
+elif ! grep -qE '^[[:space:]]*auth[[:space:]]+sufficient[[:space:]]+pam_tid\.so' "$sudo_local" 2>/dev/null; then
+	echo "  Enabling Touch ID for sudo in $sudo_local (needs sudo)"
+	echo 'auth       sufficient     pam_tid.so' | sudo tee -a "$sudo_local" >/dev/null
+fi
