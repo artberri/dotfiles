@@ -110,7 +110,7 @@ Karabiner's own Hyper+letter app shortcuts are in `karabiner/config/assets/compl
 
 [Karabiner-Elements](https://karabiner-elements.pqrs.org) key remaps: terminal-style Ctrl shortcuts on Cmd in Ghostty, Home/End to line start/end, Cmd+arrows to move by word, Hyper (Ctrl+Opt+Cmd+Shift) + letter to open apps, and per-keyboard modifier swaps. The whole `~/.config/karabiner` folder is linked (Karabiner replaces `karabiner.json` when saving, which would break a file link), so changes made in Karabiner's settings show up here as uncommitted changes. Its automatic backups are git-ignored.
 
-Per-keyboard remaps are keyed by keyboard model, so a different Mac's built-in keyboard needs its own entry.
+The built-in keyboard's remaps (Caps Lock → Backspace, right Cmd → Enter, fn → Cmd → Option → Ctrl → fn) are a rule that matches any built-in keyboard (`is_built_in_keyboard`), so they work on every Mac as is. External keyboards' remaps are keyed by vendor and product ID in Karabiner's Devices settings.
 
 ### macOS settings
 
