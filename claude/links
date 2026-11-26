@@ -4,10 +4,13 @@
 # account, used by the `ccc` alias). Each folder's settings.json belongs to
 # the machine (secrets in env, work plugins, and Claude rewrites it via
 # /config, /model); claude/setup merges the shared preferences from
-# claude/settings.json into both.
+# claude/settings.json into both. The typescript7-lsp plugin goes in skills/,
+# where Claude Code loads a plugin folder without installing it.
 CLAUDE.md                 .claude/CLAUDE.md
 keybindings.json          .claude/keybindings.json
 commands/history.md       .claude/commands/history.md
+plugins/typescript7-lsp   .claude/skills/typescript7-lsp
 CLAUDE.md                 .claude-personal/CLAUDE.md
 keybindings.json          .claude-personal/keybindings.json
 commands/history.md       .claude-personal/commands/history.md
+plugins/typescript7-lsp   .claude-personal/skills/typescript7-lsp

@@ -1,0 +1,9 @@
+{
+	"$schema": "https://anthropic.com/claude-code/plugin.schema.json",
+	"name": "typescript7-lsp",
+	"version": "0.1.0",
+	"description": "TypeScript 7's native language server (tsc --lsp --stdio), until the official typescript-lsp supports TypeScript 7",
+	"author": {
+		"name": "Alberto Varela Sánchez"
+	}
+}
